@@ -5,7 +5,8 @@ from flask import Flask, render_template, request
 # from config import config
 
 app = Flask(__name__, template_folder='templates')
-# Allows us to have to restart Flask on every change
+# Allows us to not have to restart Flask on every change
+# Flask will automatically restart
 app.debug = True
 f = open('./keys.json')
 options = json.load(f)
