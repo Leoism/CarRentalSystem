@@ -1,12 +1,13 @@
 #!/usr/bin/python
-import file1
 import psycopg2
-import threading
-import requests
+import json
 from flask import Flask, render_template, request
 # from config import config
 
 app = Flask(__name__, template_folder='templates')
+f = open('./keys.json')
+options = json.load(f)
+f.close()
 
 @app.route("/")
 def connect():
@@ -19,7 +20,7 @@ def connect():
 
         # connect to the PostgreSQL server
         # print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect(dbname="db01", user="postgres", password="password")
+        conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
 
         # create a cursor
         cur = conn.cursor()
@@ -53,7 +54,7 @@ def employeeQ():
     tempy = ''
     conn = None
     try:
-        conn = psycopg2.connect(dbname="db01", user="postgres", password="password")
+        conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
         cur = conn.cursor()
         if e_name == '':
             print(e_name)
@@ -78,7 +79,7 @@ def meetingQ():
     tempy = ''
     conn = None
     try:
-        conn = psycopg2.connect(dbname="db01", user="postgres", password="password")
+        conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
         cur = conn.cursor()
         cur.execute('SELECT * FROM MEETING;')
         tempy = cur.fetchall()
@@ -96,7 +97,7 @@ def attendeesQ():
     tempy = ''
     conn = None
     try:
-        conn = psycopg2.connect(dbname="db01", user="postgres", password="password")
+        conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
         cur = conn.cursor()
         cur.execute('SELECT * FROM ATTENDEES;')
         tempy = cur.fetchall()
@@ -111,5 +112,5 @@ def attendeesQ():
 
 
 if __name__ == '__main__':
-    threading.Thread(target=app.run).start()
+    app.run()
     # connect()
