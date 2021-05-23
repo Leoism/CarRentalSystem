@@ -5,15 +5,18 @@ from flask import Flask, render_template, request
 # from config import config
 
 app = Flask(__name__, template_folder='templates')
+# Allows us to have to restart Flask on every change
+app.debug = True
 f = open('./keys.json')
 options = json.load(f)
 f.close()
 
 @app.route("/")
 def connect():
-    tempy = ''
+    rows = ''
     """ Connect to the PostgreSQL database server """
     conn = None
+    column_names = None
     try:
         # read connection parameters
         # params = config()
@@ -33,9 +36,11 @@ def connect():
         # display the PostgreSQL database server version
         # db_version = cur.fetchone()
         # print(db_version)
-        tempy = cur.fetchall() # take all rows from output
-        print(tempy)
-       
+        rows = cur.fetchall() # take all rows from output
+        print(rows)
+        # Get the column names of the table
+        cur.execute("SELECT * FROM EMPLOYEE LIMIT 0;")
+        column_names = [desc[0] for desc in cur.description]
 	    # close the communication with the PostgreSQL
         cur.close()
         # connect to HTML page
@@ -46,13 +51,14 @@ def connect():
     if conn is not None:     
        print('Database connection closed.')
        conn.close()
-       return render_template("index.html", tempy = tempy) # this is a bad idea.
+       return render_template("index.html", rows=rows, column_names=column_names) # this is a bad idea.
 
 @app.route('/employeeQ')
 def employeeQ():
     e_name = request.args.get('name', default = '')
-    tempy = ''
+    rows = ''
     conn = None
+    column_names = None
     try:
         conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
         cur = conn.cursor()
@@ -64,7 +70,10 @@ def employeeQ():
             print(e_name)
             print('BBBBBBB')
             cur.execute('SELECT * FROM EMPLOYEE WHERE NAME = \'' + e_name + '\';')
-        tempy = cur.fetchall()
+        rows = cur.fetchall()
+        cur.execute("SELECT * FROM EMPLOYEE LIMIT 0;")
+        column_names = [desc[0] for desc in cur.description]
+
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -72,17 +81,20 @@ def employeeQ():
         return "Errored"
     if conn is not None:
         conn.close()
-        return render_template("index.html", tempy = tempy)
+        return render_template("index.html", rows=rows, column_names=column_names)
 
 @app.route('/meetingQ')
 def meetingQ():
-    tempy = ''
+    rows = ''
     conn = None
+    column_names = None
     try:
         conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
         cur = conn.cursor()
         cur.execute('SELECT * FROM MEETING;')
-        tempy = cur.fetchall()
+        rows = cur.fetchall()
+        cur.execute("SELECT * FROM MEETING LIMIT 0;")
+        column_names = [desc[0] for desc in cur.description]
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -90,17 +102,21 @@ def meetingQ():
         return "Errored"
     if conn is not None:
         conn.close()
-        return render_template("index.html", tempy = tempy)
+        return render_template("index.html", rows=rows, column_names=column_names)
 
 @app.route('/attendeesQ')
 def attendeesQ():
-    tempy = ''
+    rows = ''
     conn = None
+    column_names = None
     try:
         conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
         cur = conn.cursor()
         cur.execute('SELECT * FROM ATTENDEES;')
-        tempy = cur.fetchall()
+        rows = cur.fetchall()
+        cur.execute("SELECT * FROM ATTENDEES LIMIT 0;")
+        column_names = [desc[0] for desc in cur.description]
+
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
@@ -108,8 +124,7 @@ def attendeesQ():
         return "Errored"
     if conn is not None:
         conn.close()
-        return render_template("index.html", tempy = tempy)
-
+        return render_template("index.html", rows=rows, column_names=column_names)
 
 if __name__ == '__main__':
     app.run()
