@@ -134,9 +134,17 @@ def attendeesQ():
 
 @app.route('/add_rating', methods=['POST'])
 def add_rating():
+    """
+        Values received must be a JSON containing Car information, RentalRecord information, and rating.
+        Creates rating associated with the rental and car being reviewed.
+    """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
                 VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %s), %s , %s);"""
     values = request.json
+    # extract customer
+    rental_record = values['rental_record']
+    # and car objects from the json
+    car = values['car']
     conn = None
     try:
         conn = psycopg2.connect(
@@ -144,15 +152,16 @@ def add_rating():
                     user=options['user'],
                     password=options['password'])
         cur = conn.cursor()
-        cur.execute(query, (values['carVIN'], values['rentalNumber'], values['rating'],))
+        cur.execute(query, (car['vin'], rental_record['rental_number'], values['rating'],))
+        conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
         return "Error"
-    if conn is None:
+    if conn is not None:
         conn.close()
-    return "Successfully rented"
+    return "Successfully rated"
 
 @app.route('/create_rental', methods=['POST'])
 def create_rental():
@@ -241,7 +250,7 @@ def create_rental():
 """
 def _generate_number(length):
     # Turn string to list to allow inserting at the front
-    new_ren_num = list(str(int(time.time())))
+    new_ren_num = list(str(int(time.time())))[::-1]
     # ensure the length is greater than the timestamp length
     if (length < len(new_ren_num)):
         raise ValueError("Invalid length")
@@ -272,6 +281,7 @@ def _generate_number(length):
                 # if the new rental number is not unique, shuffle the number until it is unique
                 while rental_number == new_ren_num:
                     new_ren_num = ''.join(random.sample(new_ren_num, len(new_ren_num)))
+        conn.close()
         # if the number is unique, return it
         return new_ren_num
     except(Exception, psycopg2.DatabaseError) as error:
