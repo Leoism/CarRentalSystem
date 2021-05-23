@@ -1,7 +1,12 @@
 #!/usr/bin/python
+from hashlib import new
 import psycopg2
 import json
 from flask import Flask, render_template, request
+from datetime import datetime, timedelta
+import time
+import random
+
 # from config import config
 
 app = Flask(__name__, template_folder='templates')
@@ -126,6 +131,28 @@ def attendeesQ():
     if conn is not None:
         conn.close()
         return render_template("index.html", rows=rows, column_names=column_names)
+
+@app.route('/add_rating', methods=['POST'])
+def add_rating():
+    query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
+                VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %s), %s , %s);"""
+    values = request.json
+    conn = None
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(query, (values['carVIN'], values['rentalNumber'], values['rating'],))
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error"
+    if conn is None:
+        conn.close()
+    return "Successfully rented"
 
 if __name__ == '__main__':
     app.run()
