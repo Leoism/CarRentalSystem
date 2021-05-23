@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script type="module">import * as PythonApplication3 from "PythonApplication3.py";</script>
+</head>
+
+<body>
+    <div class='div_outer'>
+        <table style="width:100%">
+            <tr>
+                <th>col 1 name</th>
+                <th>Lastname</th>
+                <th>Age</th>
+            </tr>
+            {%
+            for i in tempy:
+            %}
+
+            <tr>
+                <td>{{i[0]}}</td>
+                <td>{{i[1]}}</td>
+                <td>{{i[2]}}</td>
+            </tr>
+            {%
+            endfor
+            %}
+        </table>
+    </div>
+    <input id="e_button" placeholder="Enter your name">
+    <button onclick="queryEmployee()" id="greet-button">EmployeeQ</button>
+    <br />
+    <script>
+        async function queryEmployee() {
+            ein = document.getElementById('e_button').value;
+            document.querySelector('html').innerHTML = await fetch(`/employeeQ?name=${ein}`).then((res) => res.text());
+        }
+    </script>
+    <input id="m_button" placeholder="Enter your name">
+    <button onclick="queryMeeting()" id="greet-button">MeetingQ</button>
+    <br />
+    <script>
+        async function queryMeeting() {
+            document.querySelector('html').innerHTML = await fetch('/meetingQ').then((res) => res.text())
+        }
+    </script>
+    <input id="a_button" placeholder="Enter your name">
+    <button onclick="queryAttendees()" id="greet-button">AttendeesQ</button>
+    <br />
+    <script>
+        async function queryAttendees() {
+            document.querySelector('html').innerHTML = await fetch('/attendeesQ').then((res) => res.text())
+        }
+    </script>
+    <input id="name-box" placeholder="Enter your name">
+    <button id="greet-button">Say Hello</button>
+    <br />
+    <input id="name-box" placeholder="Enter your name">
+    <button id="greet-button">Say Hello</button>
+</body>
+</html>
