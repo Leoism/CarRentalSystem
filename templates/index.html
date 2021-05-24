@@ -1,29 +1,34 @@
 <!DOCTYPE html>
 <html>
+
 <head>
     <script type="module">import * as PythonApplication3 from "PythonApplication3.py";</script>
 </head>
 
+<style>
+    table,
+    th,
+    td {
+        border: 1px solid #000;
+        border-collapse: collapse;
+    }
+</style>
+
 <body>
     <div class='div_outer'>
-        <table style="width:100%">
+        <table style="width: 100%;">
             <tr>
-                <th>col 1 name</th>
-                <th>Lastname</th>
-                <th>Age</th>
+                {% for column_name in column_names: %}
+                <th>{{column_name}}</th>
+                {% endfor %}
             </tr>
-            {%
-            for i in tempy:
-            %}
-
+            {% for row in rows: %}
             <tr>
-                <td>{{i[0]}}</td>
-                <td>{{i[1]}}</td>
-                <td>{{i[2]}}</td>
+                {% for item in row: %}
+                <td style="text-align:center">{{item}}</td>
+                {% endfor %}
             </tr>
-            {%
-            endfor
-            %}
+            {% endfor %}
         </table>
     </div>
     <input id="e_button" placeholder="Enter your name">
@@ -57,4 +62,5 @@
     <input id="name-box" placeholder="Enter your name">
     <button id="greet-button">Say Hello</button>
 </body>
+
 </html>
