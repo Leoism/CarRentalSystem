@@ -53,6 +53,7 @@ CREATE TABLE RentalRecord (
   rentalNumber    VARCHAR(16) UNIQUE NOT NULL,
   totalCost       numeric(10,2),
 
+  PRIMARY KEY (rentalNumber),
   FOREIGN KEY (carID) REFERENCES Car(ID),
   FOREIGN KEY (customerID) REFERENCES Customer(ID)
 );
@@ -62,6 +63,7 @@ CREATE TABLE RatingRecord (
   rentalNumber  VARCHAR(16) NOT NULL,
   rating        INT         NOT NULL,
 
+  PRIMARY KEY (carID, rentalNumber),
   FOREIGN KEY(carID) REFERENCES Car(ID),
   FOREIGN KEY(rentalNumber) REFERENCES RentalRecord(rentalNumber)
 );
