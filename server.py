@@ -163,6 +163,10 @@ def add_rating():
         conn.close()
     return "Successfully rated"
 
+@app.route('/rent', methods=['GET'])
+def rental_form():
+    return render_template('rent.html')
+
 @app.route('/create_rental', methods=['POST'])
 def create_rental():
     """
@@ -195,11 +199,11 @@ def create_rental():
         avail_car = cur.fetchall()
         # Ensure that the car is available
         if len(avail_car) != 1 or avail_car[0][0] is not True:
-            return "Car is not available"
+            return "Car is not available", 500
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error"
+        return "Error", 500
 
     # Second, we must create a rental record and a rental number
     rent_query = """
@@ -226,7 +230,7 @@ def create_rental():
     except(Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error"
+        return "Error", 500
 
     # Finally, we must update the availability of the car
     update_avail = """
@@ -242,8 +246,8 @@ def create_rental():
     except(Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error"
-    return "SUCCESS"
+        return "Error", 500
+    return "SUCCESS", 201
 
 """
     Generates a random number containing both numbers and letters of size length. 

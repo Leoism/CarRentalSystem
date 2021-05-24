@@ -1,0 +1,17 @@
+<script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
+<div>
+  <h1>Customer Information</h1>
+  <label for="cust-fname">First Name</label>
+  <input id="cust-fname" type="text" />
+  <label for="cust-lname">Last Name</label>
+  <input id="cust-lname" type="text" />
+  <label for="cust-bday">Birth date</label>
+  <input id="cust-bday" type="date" />
+  <h1>Rental Information</h1>
+  <label for="car-vin">Car VIN</label>
+  <input id="car-vin" type="text" minlength="11" maxlength="17">
+  <label for="rental-length">Renting Days Amounts</label>
+  <input id="rental-length" type="number" min="1">
+  <hr>
+  <button onclick="rentCar()">Rent</button>
+</div>
