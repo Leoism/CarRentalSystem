@@ -132,6 +132,10 @@ def attendeesQ():
         conn.close()
         return render_template("index.html", rows=rows, column_names=column_names)
 
+@app.route('/rate', methods=['GET'])
+def rate_form():
+    return render_template('rate.html')
+
 @app.route('/add_rating', methods=['POST'])
 def add_rating():
     """
@@ -158,10 +162,10 @@ def add_rating():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error"
+        return "Error", 500
     if conn is not None:
         conn.close()
-    return "Successfully rated"
+    return "Successfully rated", 201
 
 @app.route('/rent', methods=['GET'])
 def rental_form():

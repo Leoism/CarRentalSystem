@@ -41,3 +41,47 @@ async function rentCar() {
   alert(response);
   return response;
 }
+
+/**
+ * Rates a car using the vin number and rental number provided. Returns 'Successfully Rated'
+ * on a successful rating. Otherwise, returns the status error.
+ * @returns Returns Successfully Rated on a successful rating. Otherwise, returns the error status
+ * code.
+ */
+async function rateRental() {
+  const rating = document.getElementById('rating').value;
+  const rentalNumber = document.getElementById('rental-number').value;
+  const carVIN = document.getElementById('car-vin').value;
+
+  const isRatingValid = rating == undefined || rating < 0 || rating > 5;
+  if (isRatingValid || !rentalNumber || !carVIN) {
+    alert("You cannot have null values");
+    return "You cannot have null values";
+  }
+
+  const options = {
+    car: {
+      vin: carVIN
+    },
+    rental_record: {
+      rental_number: rentalNumber
+    },
+    rating
+  };
+
+  const response = await fetch('/add_rating', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status === 201)
+      return "Successfully Rated";
+    return res.text();
+  });
+
+  alert(response);
+  return response;
+}
