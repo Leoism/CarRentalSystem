@@ -1,5 +1,4 @@
 #!/usr/bin/python
-from hashlib import new
 import psycopg2
 import json
 from flask import Flask, render_template, request
