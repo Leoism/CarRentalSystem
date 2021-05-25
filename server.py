@@ -2,6 +2,10 @@
 import psycopg2
 import json
 from flask import Flask, render_template, request
+from datetime import datetime, timedelta
+import time
+import random
+
 # from config import config
 
 app = Flask(__name__, template_folder='templates')
@@ -126,6 +130,171 @@ def attendeesQ():
     if conn is not None:
         conn.close()
         return render_template("index.html", rows=rows, column_names=column_names)
+
+@app.route('/rate', methods=['GET'])
+def rate_form():
+    return render_template('rate.html')
+
+@app.route('/add_rating', methods=['POST'])
+def add_rating():
+    """
+        Values received must be a JSON containing Car information, RentalRecord information, and rating.
+        Creates rating associated with the rental and car being reviewed.
+    """
+    query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
+                VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %s), %s , %s);"""
+    values = request.json
+    # extract customer
+    rental_record = values['rental_record']
+    # and car objects from the json
+    car = values['car']
+    conn = None
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(query, (car['vin'], rental_record['rental_number'], values['rating'],))
+        conn.commit()
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return "Successfully rated", 201
+
+@app.route('/rent', methods=['GET'])
+def rental_form():
+    return render_template('rent.html')
+
+@app.route('/create_rental', methods=['POST'])
+def create_rental():
+    """
+        Creates a rental record associated with the Customer and the Car.
+        If the car is not available, returns false. Otherwise, creates the rental
+        record, and updates the availability of the car.
+    """
+    # Get the current date for which the customer is starting the rent
+    today = datetime.now()
+    values = request.json
+    # extract customer
+    customer = values['customer']
+    # and car objects from the json
+    car = values['car']
+    conn = None
+    cur = None
+    # First we must check that the car is available
+    check_avail_query = """
+        SELECT availability
+        FROM Car
+        WHERE Car.availability = 'true' AND Car.VIN = %s;
+    """
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(check_avail_query, (car['vin'],))
+        avail_car = cur.fetchall()
+        # Ensure that the car is available
+        if len(avail_car) != 1 or avail_car[0][0] is not True:
+            return "Car is not available", 500
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+
+    # Second, we must create a rental record and a rental number
+    rent_query = """
+        INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
+        VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s),
+        (SELECT Customer.ID FROM Customer
+        WHERE Customer.firstName = %(f_name)s
+            AND Customer.lastName = %(l_name)s
+            AND Customer.birthDate = %(b_day)s), 
+        %(todays_date)s, %(expected_ret)s, %(rental_num)s);
+        """
+    try:
+        cur.execute(rent_query, {
+            'car_vin': car['vin'],
+            'f_name': customer['first_name'], 
+            'l_name': customer['last_name'],
+            'b_day': customer['birthdate'],
+            'todays_date': str(today),
+            # rental_length must be in days
+            'expected_ret': str(today + timedelta(days=values['rental_length'])),
+            'rental_num': _generate_number(16)
+        })
+        conn.commit()
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+
+    # Finally, we must update the availability of the car
+    update_avail = """
+        UPDATE Car
+        SET availability = 'false'
+        WHERE Car.VIN = %s;
+        """
+    try:
+        # update the availability of the car to be unavialable
+        cur.execute(update_avail, (car['vin'],))
+        conn.commit()
+        conn.close()
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return "SUCCESS", 201
+
+"""
+    Generates a random number containing both numbers and letters of size length. 
+"""
+def _generate_number(length):
+    # Turn string to list to allow inserting at the front
+    new_ren_num = list(str(int(time.time())))[::-1]
+    # ensure the length is greater than the timestamp length
+    if (length < len(new_ren_num)):
+        raise ValueError("Invalid length")
+    # determine the amount of alpha characters to add to the number
+    alpha_size = length - len(new_ren_num)
+    alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    # add alpha characters to the front of the string
+    for i in range(alpha_size):
+        new_ren_num.insert(0, alpha[random.randint(0, len(alpha) - 1)])
+    # convert the list back to a string
+    new_ren_num = ''.join(new_ren_num)
+
+    rental_query = """
+        SELECT rentalNumber
+        FROM RentalRecord;
+    """
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(rental_query)
+        rental_records = cur.fetchall()
+        # go through every rental records rental number to ensure we have a unique number
+        for rental_record in rental_records:
+            for rental_number in rental_record:
+                # if the new rental number is not unique, shuffle the number until it is unique
+                while rental_number == new_ren_num:
+                    new_ren_num = ''.join(random.sample(new_ren_num, len(new_ren_num)))
+        conn.close()
+        # if the number is unique, return it
+        return new_ren_num
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return None
 
 if __name__ == '__main__':
     app.run()
