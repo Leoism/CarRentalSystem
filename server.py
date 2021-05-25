@@ -282,8 +282,8 @@ def query_cars():
             JOIN PriceType ON (PriceType.carID = Car.id)
             JOIN RatingRecord ON (RatingRecord.carID = Car.id)
             JOIN CarType ON (CarType.type = Car.CarType)
-        WHERE CarType.Name = 'Sedan' AND Car.Make = 'Toyota'
-        AND PriceType.hourlyRate <= '70' AND Car.availability = true
+        WHERE CarType.Name = %(car_name)s AND Car.Make = %(car_make)s
+        AND Car.availability = true
         GROUP BY Car.VIN, Car.CarType, Car.Make, Car.Model, Car.Year
         HAVING Car.numAccidents < 2;
 

@@ -56,6 +56,13 @@
             document.querySelector('html').innerHTML = await fetch('/attendeesQ').then((res) => res.text())
         }
     </script>
+
+    <script>
+        async function queryCars() {
+            document.querySelector('html').innerHTML = await fetch('/queryCars').then((res) => res.text())
+        }
+    </script>
+
     <input id="name-box" placeholder="Enter your name">
     <button id="greet-button">Say Hello</button>
     <br />
