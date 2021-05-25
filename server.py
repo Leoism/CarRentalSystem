@@ -252,6 +252,59 @@ def create_rental():
         return "Error", 500
     return "SUCCESS", 201
 
+@app.route('/update_accidents', methods=['POST'])
+def update_accidents():
+    """
+        Update amount of accidents on a car. Increments numAccidents by one, as it is impossible to ethically undo an accident.
+    """
+ # Update the accidents of the car
+    update_acid = """
+        UPDATE Car
+        SET Car.numAccidents = Car.numAccidents + 1
+        WHERE Car.VIN = %s;
+        """
+    try:
+        # update the car accidents
+        cur.execute(update_acid, (car['vin'],))
+        conn.commit()
+        conn.close()
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return "SUCCESS", 201
+
+
+@app.route('/queryCars')
+def query_cars():
+    show_car_query = """
+        FROM Car
+            JOIN PriceType ON (PriceType.carID = Car.id)
+            JOIN RatingRecord ON (RatingRecord.carID = Car.id)
+            JOIN CarType ON (CarType.type = Car.CarType)
+        WHERE CarType.Name = 'Sedan' AND Car.Make = 'Toyota'
+        AND PriceType.hourlyRate <= '70' AND Car.availability = true
+        GROUP BY Car.VIN, Car.CarType, Car.Make, Car.Model, Car.Year
+        HAVING Car.numAccidents < 2;
+
+    """
+
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(show_car_query, (car['vin'],))
+        avail_car = cur.fetchall()
+        # Ensure that the car is available
+        if len(avail_car) != 1 or avail_car[0][0] is not True:
+            return "Car is not available", 500
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+
 """
     Generates a random number containing both numbers and letters of size length. 
 """
