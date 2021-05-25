@@ -85,3 +85,72 @@ async function rateRental() {
   alert(response);
   return response;
 }
+
+async function addCar() {
+  const vin = document.getElementById('vin').value;
+  const cartype = document.getElementById('cartype').value;
+  const make = document.getElementById('make').value;
+  const model = document.getElementById('model').value;
+  const year = document.getElementById('year').value;
+  const numaccidents = document.getElementById('numaccidents').value;
+  const seats = document.getElementById('seats').value;
+  const hourlyrate = document.getElementById('hourlyrate').value;
+  const availability = document.getElementById('availability').value;
+
+  const isValidAvilability = availability == 'true' || availability == 'false';
+  const isValidYear = year < 2022 || year > 1950;  // arbitrary values
+
+  if (!isValidAvilability) {
+    alert("Avialability has to be true or false");
+    return "You cannot have nuAvialability";
+  }
+
+  if (!isValidYear) {
+    alert("Year is either too old or not valid");
+    return "Year is either too old or not valid";
+  }
+
+  const options = {
+    car: {
+      vin, cartype, make, model, year, numaccidents, seats, hourlyrate, availability
+    }
+  };
+
+  const response = await fetch('/add_car', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status === 201)
+      return "Successfully Added Car";
+    return res.text();
+  });
+  alert(response);
+}
+
+async function removeCar() {
+  const vin = document.getElementById('r-vin').value;
+
+  const options = {
+    car: {
+      vin
+    }
+  };
+
+  const response = await fetch('/remove_car', {
+    method: 'DELETE',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status === 200)
+      return "Successfully Added Car";
+    return res.text();
+  });
+  alert(response);
+}  
