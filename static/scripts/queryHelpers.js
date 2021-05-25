@@ -113,7 +113,7 @@ async function addCustomer() {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(customerInfo2)
+    body: JSON.stringify(customerInfo)
   }).then((res) => {
     if (res.status == 201)
       return "successfully Added Customer"
@@ -127,7 +127,7 @@ async function addCustomer() {
 
 async function updateAvailability(availabilityStatus) {
   const carvin = document.getElementById('car-vin').value
-  stat = 'True'
+  let stat = 'True'
   if (availabilityStatus == 'unavailable') {
     stat = 'False'
   }

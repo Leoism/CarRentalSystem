@@ -36,7 +36,7 @@ def connect():
 	# execute a statement
         # print('PostgreSQL database version:')
         # cur.execute('SELECT version()')
-        cur.execute('SELECT * FROM car;') # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
+        cur.execute('SELECT * FROM Car;') # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
 
         # display the PostgreSQL database server version
         # db_version = cur.fetchone()
@@ -313,6 +313,7 @@ def add_customer():
         cur = conn.cursor()
         cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['bDay'], values['street'], values['city'], values['state'],))
         conn.commit()
+        conn.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
@@ -352,6 +353,7 @@ def update_availability_status():
             conn.commit()
         else:
             return "Car does not exist"
+        conn.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
