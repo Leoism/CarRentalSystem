@@ -252,6 +252,77 @@ def create_rental():
         return "Error", 500
     return "SUCCESS", 201
 
+@app.route('/add_car', methods=['POST'])
+def add_car():
+
+    query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+    values = request.json
+
+    car = values['car']
+
+    vin = car['vin']
+    carType = car['cartype']
+    make = car['make']
+    model = car['model']
+    year = car['year']
+    numaccidents = car['numaccidents']
+    seats = car['seats']
+    hourlyrate = car['hourlyrate']
+    availability = car['availability']
+
+    conn = None
+
+    try: 
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate, availability))
+        conn.commit()
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return "Successfuly Added a Car", 201
+
+@app.route('/remove_car', methods=['DELETE'])
+def remove_car():
+    query = """DELETE FROM Car
+               WHERE vin = %s; """
+
+    values = request.json
+    
+    car = values['car']
+    vin = car['vin']
+
+    conn = None
+
+    try: 
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(query, (vin,))
+        conn.commit()
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return "Successfuly Removed a Car", 200
+
+@app.route('/car', methods=['GET'])
+def return_car():
+    return render_template('car.html')
+
 """
     Generates a random number containing both numbers and letters of size length. 
 """
