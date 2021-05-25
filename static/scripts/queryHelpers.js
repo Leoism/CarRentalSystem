@@ -149,7 +149,7 @@ async function removeCar() {
     body: JSON.stringify(options)
   }).then((res) => {
     if (res.status === 200)
-      return "Successfully Added Car";
+      return "Successfully Removed Car";
     return res.text();
   });
   alert(response);
