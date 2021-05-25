@@ -17,6 +17,8 @@ blah blah blah add more description about what the project does here
 
 ## Setting up the Project and Environment
 
+This project will need python3 version 3.7+
+
 There are a few things that will need to be installed for CarRentalSystem to work 
 properly:
 
