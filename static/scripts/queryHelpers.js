@@ -153,4 +153,72 @@ async function removeCar() {
     return res.text();
   });
   alert(response);
-}  
+}
+
+async function addCustomer() {
+  const fname = document.getElementById('cust-fname').value
+  const lname = document.getElementById('cust-lname').value
+  const bday = document.getElementById('cust-bday').value
+  const streetField = document.getElementById('cust-street').value
+  const cityField = document.getElementById('cust-city').value
+  const stateField = document.getElementById('cust-state').value
+
+  if (!fname || !lname || !bday || !streetField || !cityField || !stateField) {
+    console.log("you cannot have null values")
+  }
+
+  const customerInfo = {
+    fName: fname,
+    lName: lname,
+    bDay: bday,
+    street: streetField,
+    city: cityField,
+    state: stateField
+  };
+
+  const response = await fetch('/add_customer', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(customerInfo)
+  }).then((res) => {
+    if (res.status == 201)
+      return "successfully Added Customer"
+    return res.text()
+  });
+
+  alert(response);
+  return response;
+
+}
+
+async function updateAvailability(availabilityStatus) {
+  const carvin = document.getElementById('car-vin').value
+  let stat = 'True'
+  if (availabilityStatus == 'unavailable') {
+    stat = 'False'
+  }
+  const options = {
+    vin: carvin,
+    status: stat
+  }
+
+  const response = await fetch('/update_availability_status', {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status == 201)
+      return "Successfully Updated Availability Status"
+    return res.text()
+  });
+
+  alert(response);
+  return response;
+
+}
