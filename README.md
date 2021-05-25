@@ -30,6 +30,6 @@ a follow up message saying that there is a newer version of Flask that could be
 installed. The update isn't neccessary, but if you want to update it wite the 
 command that the prompt displays
 
-To install Psycopg2, in a command prompt type `pip install psycobg2` 
+To install Psycopg2, in a command prompt type `pip install psycopg2` 
 
 ------ ADD MORE AS NECESSARY ------
