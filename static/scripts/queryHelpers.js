@@ -106,14 +106,6 @@ async function addCustomer() {
     city: cityField,
     state: stateField
   };
-  const customerInfo2 = {
-    fName: 'Landon',
-    lName: 'Ton',
-    bDay: '4/20/1998',
-    street: '1111 new St',
-    city: 'seattle',
-    state: 'WA'
-  };
 
   const response = await fetch('/add_customer', {
     method: 'POST',
