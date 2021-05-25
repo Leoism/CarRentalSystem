@@ -21,13 +21,13 @@ There are a few things that will need to be installed for CarRentalSystem to wor
 properly:
 
 1. Flask
-2. Psycobg2
+2. Psycopg2
 
 To install Flask, open a command prompt and type `pip install Flask`. You might get
 a follow up message saying that there is a newer version of Flask that could be 
 installed. The update isn't neccessary, but if you want to update it wite the 
 command that the prompt displays
 
-To install Psycobg2, in a command prompt type `pip install psycobg2` 
+To install Psycopg2, in a command prompt type `pip install psycobg2` 
 
 ------ ADD MORE AS NECESSARY ------
