@@ -353,6 +353,7 @@ def update_availability_status():
             conn.commit()
         else:
             return "Car does not exist"
+            conn.close()
         conn.close()
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
