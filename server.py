@@ -36,7 +36,7 @@ def connect():
 	# execute a statement
         # print('PostgreSQL database version:')
         # cur.execute('SELECT version()')
-        cur.execute('SELECT * FROM EMPLOYEE;') # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
+        cur.execute('SELECT * FROM car;') # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
 
         # display the PostgreSQL database server version
         # db_version = cur.fetchone()
@@ -44,7 +44,7 @@ def connect():
         rows = cur.fetchall() # take all rows from output
         print(rows)
         # Get the column names of the table
-        cur.execute("SELECT * FROM EMPLOYEE LIMIT 0;")
+        cur.execute("SELECT * FROM car LIMIT 0;")
         column_names = [desc[0] for desc in cur.description]
 	    # close the communication with the PostgreSQL
         cur.close()
@@ -296,6 +296,73 @@ def _generate_number(length):
         conn.close()
         return None
 
+@app.route('/add_customer', methods=["POST"])
+def add_customer():
+    values = request.json
+    addCustomerQuery = """
+        INSERT INTO Customer (firstname, lastname, birthdate, street, city, state)
+        VALUES (%s, %s, %s, %s, %s, %s)
+    """
+
+    conn = None
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['bDay'], values['street'], values['city'], values['state'],))
+        conn.commit()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return "success", 201
+
+@app.route('/customer', methods=["GET"])
+def renderCustomer():
+    return render_template("addCustomer.html")
+
+@app.route('/update_availability_status', methods=["PUT"])
+def update_availability_status():
+    values = request.json
+    updateStatusQuery = """
+        UPDATE Car
+        SET availability = %s
+        WHERE vin = %s;
+    """
+    check_car_exists = """
+        SELECT vin 
+        FROM Car 
+        WHERE vin = %s;
+    """
+    conn = None
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        
+        cur = conn.cursor()
+        cur.execute(check_car_exists, (values['vin'],))
+        isAvail = cur.fetchall()
+        print(isAvail)
+        if len(isAvail) == 1:
+            cur.execute(updateStatusQuery, (values['status'],values['vin']))
+            conn.commit()
+        else:
+            return "Car does not exist"
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return "success", 201
+
+@app.route('/updateAvailability', methods=["GET"])
+def renderAvailabiliity():
+    return render_template("updateAvailabilityStatus.html")
+
 if __name__ == '__main__':
     app.run()
+    # add_customer()
     # connect()

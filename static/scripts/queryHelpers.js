@@ -37,7 +37,7 @@ async function rentCar() {
       return "Successfully Rented";
     return res.text();
   });
-
+  console.log("didn't work")
   alert(response);
   return response;
 }
@@ -69,13 +69,13 @@ async function rateRental() {
     rating
   };
 
-  const response = await fetch('/add_rating', {
+  const response = await fetch('/add_rating', { // add rating is the endpoint
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(options)
+    body: JSON.stringify(options) // all of the stuff we want sent over to the endpoint which is addrating in this case
   }).then((res) => {
     if (res.status === 201)
       return "Successfully Rated";
@@ -84,4 +84,79 @@ async function rateRental() {
 
   alert(response);
   return response;
+}
+
+async function addCustomer() {
+  const fname = document.getElementById('cust-fname').value
+  const lname = document.getElementById('cust-lname').value
+  const bday = document.getElementById('cust-bday').value
+  const streetField = document.getElementById('cust-street').value
+  const cityField = document.getElementById('cust-city').value
+  const stateField = document.getElementById('cust-state').value
+
+  if (!fname || !lname || !bday || !streetField || !cityField || !stateField) {
+    console.log("you cannot have null values")
+  }
+
+  const customerInfo = {
+    fName: fname,
+    lName: lname,
+    bDay: bday,
+    street: streetField,
+    city: cityField,
+    state: stateField
+  };
+  const customerInfo2 = {
+    fName: 'Landon',
+    lName: 'Ton',
+    bDay: '4/20/1998',
+    street: '1111 new St',
+    city: 'seattle',
+    state: 'WA'
+  };
+
+  const response = await fetch('/add_customer', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(customerInfo2)
+  }).then((res) => {
+    if (res.status == 201)
+      return "successfully Added Customer"
+      return res.text()
+  });
+
+  alert(response);
+  return response;
+
+}
+
+async function updateAvailability(availabilityStatus) {
+  const carvin = document.getElementById('car-vin').value
+  stat = 'True'
+  if (availabilityStatus == 'unavailable') {
+    stat = 'False'
+  }
+  const options = {
+    vin: carvin,
+    status: stat}
+
+  const response = await fetch('/update_availability_status', { 
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status == 201) 
+    return "Successfully Updated Availability Status"
+    return res.text()
+  });
+
+  alert(response);
+  return response;
+
 }
