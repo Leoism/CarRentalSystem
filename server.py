@@ -273,8 +273,8 @@ def update_accidents():
  # Update the accidents of the car
     update_acid = """
         UPDATE Car
-        SET Car.numAccidents = Car.numAccidents + 1
-        WHERE Car.VIN = %s;
+        SET numAccidents = numAccidents + 1
+        WHERE VIN = %s;
         """
     try:
         # update the car accidents
