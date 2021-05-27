@@ -1,40 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="background-color: #e5e5e5;">
+    <div>
+        <h1 class="header">Add Car Information</h1>
+    
+        <label for="vin">VIN</label>
+        <input id="vin" type="text" />
+        <br>
+        <label for="cartype">Car Type</label>
+        <select id="cartype">
+            <option value="SU">SUV</option>
+            <option value="SE">Sedan</option>
+            <option value="CO">Coupe</option>
+            <option value="MV">Mini Van</option>
+            
+        </select>
+        <br>
+        <label for="make">Make</label>
+        <select id="make">
+            <option value="Audi">Audi</option>
+            <option value="BMW">BMW</option>
+            <option value="Citroen">Citroen</option>
+            <option value="Ford">Ford</option>
+            <option value="Honda">Honda</option>
+            <option value="Jaguar">Jaguar</option>
+            <option value="Land Rover">Land Rover</option>
+            <option value="Mercedes">Mercedes</option>
+            <option value="Mini">Mini</option>
+            <option value="Nissan">Nissan</option>
+            <option value="Toyota">Toyota</option>
+            <option value="Volvo">Volvo</option>
+          </select>
+        <br>
+        <label for="model">Model</label>
+        <input id="model" type="text" />
+        <br>
+        <label for="year">Year</label>
+        <input id="year" type="text" />
+        <br>
+        <label for="numaccidents"># of Accidents</label>
+        <input id="numaccidents" type="text" />
+        <br>
+        <label for="seats"># of Seats</label>
+        <input id="seats" type="text" />
+        <br>
+        <label for="hourlyrate">Hourly Rate</label>
+        <input id="hourlyrate" type="text" />
+        <br>
+        <label for="availability">Availability</label>
+        <input id="availability" type="text" />
+        <button onclick="addCar()">Add Car</button>
+    </div>
+    
+    <div>
+        <h1 class="header">Remove a Car by Vin</h1>
+        <label for="r-vin">VIN</label>
+        <input id="r-vin" type="text" />
+        <button onclick="removeCar()">Remove Car</button>
+    </div>
+</body>
 <script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
+</html>
 
-<div>
-    <h1>Add Car Information</h1>
 
-    <label for="vin">VIN</label>
-    <input id="vin" type="text" />
-    <br>
-    <label for="carType">Car Type</label>
-    <input id="cartype" type="text" />
-    <br>
-    <label for="make">Make</label>
-    <input id="make" type="text" />
-    <br>
-    <label for="model">Model</label>
-    <input id="model" type="text" />
-    <br>
-    <label for="year">Year</label>
-    <input id="year" type="text" />
-    <br>
-    <label for="numaccidents"># of Accidents</label>
-    <input id="numaccidents" type="text" />
-    <br>
-    <label for="seats"># of Seats</label>
-    <input id="seats" type="text" />
-    <br>
-    <label for="hourlyrate">Hourly Rate</label>
-    <input id="hourlyrate" type="text" />
-    <br>
-    <label for="availability">Availability</label>
-    <input id="availability" type="text" />
-    <button onclick="addCar()">Add Car</button>
-</div>
 
-<div>
-    <h1>Remove a Car by Vin</h1>
-    <label for="r-vin">VIN</label>
-    <input id="r-vin" type="text" />
-    <button onclick="removeCar()">Remove Car</button>
-</div>
