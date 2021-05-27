@@ -36,7 +36,13 @@ def connect():
 	# execute a statement
         # print('PostgreSQL database version:')
         # cur.execute('SELECT version()')
-        cur.execute('SELECT * FROM Car;') # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
+        cur.execute("""SELECT Car.VIN, CarType.Name, Car.Make, Car.Model, Car.Year, Car.NumAccidents, 
+        Car.Seats, Car.HourlyRate, Car.Availability, Table1.Rating 
+        FROM Car
+            JOIN CarType ON (CarType.type = Car.CarType)
+            LEFT JOIN (SELECT RatingRecord.carID, SUM(RatingRecord.rating) / COUNT(RatingRecord.rating) AS Rating
+                FROM RatingRecord
+                GROUP BY RatingRecord.carId) AS Table1 ON (Car.ID = Table1.CarID);""") # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
 
         # display the PostgreSQL database server version
         # db_version = cur.fetchone()
@@ -44,7 +50,14 @@ def connect():
         rows = cur.fetchall() # take all rows from output
         print(rows)
         # Get the column names of the table
-        cur.execute("SELECT * FROM car LIMIT 0;")
+        cur.execute("""SELECT Car.VIN, CarType.Name, Car.Make, Car.Model, Car.Year, Car.NumAccidents, 
+        Car.Seats, Car.HourlyRate, Car.Availability, Table1.Rating 
+        FROM Car
+            JOIN CarType ON (CarType.type = Car.CarType)
+            LEFT JOIN (SELECT RatingRecord.carID, SUM(RatingRecord.rating) / COUNT(RatingRecord.rating) AS Rating
+                FROM RatingRecord
+                GROUP BY RatingRecord.carId) AS Table1 ON (Car.ID = Table1.CarID)
+                 LIMIT 0;""")
         column_names = [desc[0] for desc in cur.description]
 	    # close the communication with the PostgreSQL
         cur.close()
@@ -323,6 +336,114 @@ def remove_car():
 def return_car():
     return render_template('car.html')
 
+
+
+@app.route('/update_accidents', methods=['POST'])
+def update_accidents():
+    """
+        Update amount of accidents on a car. Increments numAccidents by one, as it is impossible to ethically undo an accident.
+    """
+ # Update the accidents of the car
+    update_acid = """
+        UPDATE Car
+        SET Car.numAccidents = Car.numAccidents + 1
+        WHERE Car.VIN = %s;
+        """
+    try:
+        # update the car accidents
+        cur.execute(update_acid, (car['vin'],))
+        conn.commit()
+        conn.close()
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return "SUCCESS", 201
+
+
+@app.route('/queryCars')
+def query_cars():
+    car = None
+    rows = ''
+    column_names = None
+    values = request.args.get('search', default = '')
+    filter = json.loads(values)['filter']
+    #no * to avoid showing ID
+    show_car_query = """
+        SELECT Car.VIN, CarType.Name, Car.Make, Car.Model, Car.Year, Car.NumAccidents, 
+        Car.Seats, Car.HourlyRate, Car.Availability, Table1.Rating 
+        FROM Car
+            JOIN CarType ON (CarType.type = Car.CarType)
+            LEFT JOIN (SELECT RatingRecord.carID, SUM(RatingRecord.rating) / COUNT(RatingRecord.rating) AS Rating
+                FROM RatingRecord
+                GROUP BY RatingRecord.carId) AS Table1 ON (Car.ID = Table1.CarID)
+            WHERE 
+            """
+    #force a number for first where
+    if filter['acc'] != '': 
+        show_car_query += 'Car.NumAccidents <= ' + filter['acc']#implementation type2
+    else:
+        show_car_query += 'Car.NumAccidents >= 0 '
+    if filter['vin'] != '': 
+        show_car_query += 'AND Car.VIN =  \'' + filter ['vin'] + '\''
+    if filter['name'] != '': 
+        show_car_query += 'AND CarType.Name = %(car_name)s '
+    if filter['make'] != '': 
+        show_car_query += 'AND Car.Make = %(car_make)s '
+    if filter['model'] != '': 
+        show_car_query += 'AND Car.Model = %(car_model)s '
+    if filter['year'] != '': 
+        show_car_query += 'AND Car.Year = %(car_year)s '
+    if filter['seats'] != '': 
+        show_car_query += 'AND Car.Seats = %(car_seats)s '    
+    if filter['price'] != '': 
+        show_car_query += 'AND Car.HourlyRate <= %(car_price)s '  
+    if filter['avail'] != '': 
+        show_car_query += 'AND Car.Availability = %(car_avail)s '       
+    if filter['rate'] != '': 
+        show_car_query += 'AND Table1.Rating >= %(car_rate)s '       
+             
+    #show_car_query += 'GROUP BY ratingrecord.carid,Car.ID, Car.VIN, Car.CarType, Car.Make, Car.Model, Car.Year;' 
+    show_car_query += ';'
+    try:
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(show_car_query, { #implementation type1
+            'car_vin': filter['vin'],
+            'car_name': filter['name'], 
+            'car_make': filter['make'],
+            'car_model': filter['model'],
+            'car_year': filter['year'],
+            'car_acc': filter['acc'],
+            'car_seats': filter['seats'],
+            'car_price': filter['price'],
+            'car_avail': filter['avail'],
+            'car_rate': filter['rate']
+        })
+        #conn.commit()
+        rows = cur.fetchall()
+        cur.execute(""" SELECT Car.VIN, CarType.Name, Car.Make, Car.Model, Car.Year, Car.NumAccidents, 
+        Car.Seats, Car.HourlyRate, Car.Availability, Table1.Rating 
+        FROM Car
+            JOIN CarType ON (CarType.type = Car.CarType)
+            LEFT JOIN (SELECT RatingRecord.carID, SUM(RatingRecord.rating) / COUNT(RatingRecord.rating) AS Rating
+                FROM RatingRecord
+                GROUP BY RatingRecord.carId) AS Table1 ON (Car.ID = Table1.CarID)
+             LIMIT 0;""")
+        column_names = [desc[0] for desc in cur.description]
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return render_template("index.html", rows=rows, column_names=column_names)
+    
+    
 """
     Generates a random number containing both numbers and letters of size length. 
 """
