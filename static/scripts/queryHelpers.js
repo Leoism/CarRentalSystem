@@ -236,15 +236,6 @@ async function queryCars() {
   let avail = document.getElementById('car_avail').value;
   let rate = document.getElementById('car_rate').value;
 
-  /*let arr = ['vin', 'name', 'make', 'model', 'year', 'acc', 'seats', 'price', 'avail', 'rate'];
-  for (var i = 0; i < arr.length; i++)
-  {
-    value = arr[i];
-
-    if ( window[value] == null ) //window only works on browser
-    window[value] = '*';
-  }
-  */
  if(!vin) vin = ''
  if(!name) name = ''
  if(!make) make = ''
