@@ -308,11 +308,11 @@ def query_cars():
             """
     #force a number for first where
     if filter['acc'] != '': 
-        show_car_query += 'Car.NumAccidents <= ' + filter['acc']#implementation type2
+        show_car_query += 'Car.NumAccidents <= %(car_acc)s'
     else:
         show_car_query += 'Car.NumAccidents >= 0 '
     if filter['vin'] != '': 
-        show_car_query += 'AND Car.VIN =  \'' + filter ['vin'] + '\''
+        show_car_query += 'AND Car.VIN =  %(car_vin)s '
     if filter['name'] != '': 
         show_car_query += 'AND CarType.Name = %(car_name)s '
     if filter['make'] != '': 
