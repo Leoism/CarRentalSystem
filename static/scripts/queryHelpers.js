@@ -95,26 +95,37 @@ async function addCar() {
   const numaccidents = document.getElementById('numaccidents').value;
   const seats = document.getElementById('seats').value;
   const hourlyrate = document.getElementById('hourlyrate').value;
-  const availability = document.getElementById('availability').value;
-
-  const isValidAvilability = availability == 'true' || availability == 'false';
-  const isValidYear = year < 2022 || year > 1950;  // arbitrary values
-
-  if (!isValidAvilability) {
-    alert("Avialability has to be true or false");
-    return "You cannot have nuAvialability";
-  }
-
-  if (!isValidYear) {
-    alert("Year is either too old or not valid");
-    return "Year is either too old or not valid";
-  }
+  const availability = document.getElementById('availability').checked;
 
   const options = {
     car: {
       vin, cartype, make, model, year, numaccidents, seats, hourlyrate, availability
     }
   };
+
+  // checks for valid data
+  if (vin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (vin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
+
+  if (numaccidents < 0) { // num accidents > 0
+    alert("Number of accidents can't be less than 0");
+    return "Number of accidents can't be less than 0";
+  }
+
+  if (seats < 1) { // number of seats > 1
+    alert("Car can't have less than 1 seat");
+    return "Car can't have less than 1 seat";
+  }
+
+  if (hourlyrate < 0) { // hourly rate > 1
+    alert("Car can't be less than $0/hr");
+    return "Car can't be less than $0/hr";
+  }
 
   const response = await fetch('/add_car', {
     method: 'POST',

@@ -10,7 +10,7 @@
         <h1 class="header">Add Car Information</h1>
     
         <label for="vin">VIN</label>
-        <input id="vin" type="text" />
+        <input id="vin" type="text" minlength="11" maxlength="17"/>
         <br>
         <label for="cartype">Car Type</label>
         <select id="cartype">
@@ -18,49 +18,39 @@
             <option value="SE">Sedan</option>
             <option value="CO">Coupe</option>
             <option value="MV">Mini Van</option>
-            
         </select>
         <br>
         <label for="make">Make</label>
-        <select id="make">
-            <option value="Audi">Audi</option>
-            <option value="BMW">BMW</option>
-            <option value="Citroen">Citroen</option>
-            <option value="Ford">Ford</option>
-            <option value="Honda">Honda</option>
-            <option value="Jaguar">Jaguar</option>
-            <option value="Land Rover">Land Rover</option>
-            <option value="Mercedes">Mercedes</option>
-            <option value="Mini">Mini</option>
-            <option value="Nissan">Nissan</option>
-            <option value="Toyota">Toyota</option>
-            <option value="Volvo">Volvo</option>
-          </select>
+        <input id="make" type="text" />
         <br>
         <label for="model">Model</label>
         <input id="model" type="text" />
         <br>
         <label for="year">Year</label>
-        <input id="year" type="text" />
+        <input id="year" type="number" min="1950" max="2022"/>
         <br>
         <label for="numaccidents"># of Accidents</label>
-        <input id="numaccidents" type="text" />
+        <input id="numaccidents" type="number" min="0"/>
         <br>
         <label for="seats"># of Seats</label>
-        <input id="seats" type="text" />
+        <input id="seats" type="number" min="1"/>
         <br>
         <label for="hourlyrate">Hourly Rate</label>
-        <input id="hourlyrate" type="text" />
+        <input id="hourlyrate" type="number" min="0" />
         <br>
-        <label for="availability">Availability</label>
-        <input id="availability" type="text" />
+        <label for="availability">Availability (true/false)</label>
+        <input id="availability" type="checkbox" />
+        <label for="availability">true</label>
+        <input id="availability" type="checkbox" />
+        <label for="availability">false</label>
+        <br>
         <button onclick="addCar()">Add Car</button>
     </div>
     
     <div>
         <h1 class="header">Remove a Car by Vin</h1>
         <label for="r-vin">VIN</label>
-        <input id="r-vin" type="text" />
+        <input id="r-vin" type="text" minlength="11" maxlength="17"/>
         <button onclick="removeCar()">Remove Car</button>
     </div>
 </body>
