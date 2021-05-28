@@ -55,6 +55,7 @@ In order for the webserver to properly run, you must create a `keys.json` file a
 + `<password>` must be replaced with the password associated with the PostgreSQL username you specified earlier.
 
 Once run, you can now start running your own rental company.
+
 ---
 ## Running the Webserver
 After completing all previous steps, you are now ready to start running your own rental company. To do so, ensure that you are in the root directory of the app and run the following in a command line:
