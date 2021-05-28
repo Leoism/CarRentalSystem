@@ -1,24 +1,65 @@
 <script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
+<script type="text/javascript" src="/static/scripts/navigation_template.js"></script>
+<link rel="stylesheet" href="/static/styles/navbar.css">
+<nav-bar></nav-bar>
 <div>
-  <h1>Customer Information</h1>
-  <label for="cust-fname">First Name</label>
-  <input id="cust-fname" type="text" />
-  <label for="cust-lname">Last Name</label>
-  <input id="cust-lname" type="text" />
-  <label for="cust-bday">Birth date</label>
-  <input id="cust-bday" type="date" />
-  <h1>Rental Information</h1>
-  <label for="car-vin">Car VIN</label>
-  <input id="car-vin" type="text" minlength="11" maxlength="17">
-  <label for="rental-length">Renting Days Amounts</label>
-  <input id="rental-length" type="number" min="1">
-  <hr>
-  <button onclick="rentCar()">Rent</button>
+    <h1>Rent a car</h1>
+    <h2>Enter customer info</h2>
+    <label for="cust-fname">First Name</label>
+    <input id="cust-fname" type="text" />
+    <label for="cust-lname">Last Name</label>
+    <input id="cust-lname" type="text" />
+    <label for="cust-bday">Birth date</label>
+    <input id="cust-bday" type="date" />
+    <h2>Enter car info</h2>
+    <label for="car-vin">Car VIN</label>
+    <input id="car-vin" type="text" minlength="11" maxlength="17">
+    <label for="rental-length">Renting Days Amounts</label>
+    <input id="rental-length" type="number" min="1">
+    <hr>
+    <button onclick="rentCar()">Rent</button>
 </div>
 <div>
     <h1>Get total rental cost</h1>
-    <label for="rental-num">Rental Number</label>
-    <input id="rental-num" type="text"/>
+    <label for="rental-num1">Rental Number</label>
+    <input id="rental-num1" type="text" />
     <hr />
     <button onclick="getRentalCost()">Get cost</button>
+</div>
+
+
+<style>
+
+    table,
+    th,
+    td {
+        border: 1px solid #000;
+        border-collapse: collapse;
+    }
+</style>
+
+<div>
+    <h1>Get rental info</h1>
+    <div class='div_outer'>
+        <table style="width: 100%;">
+            <tr>
+                {% for column_name in column_names: %}
+                <th>{{column_name}}</th>
+                {% endfor %}
+            </tr>
+            {% for row in rows: %}
+            <tr>
+                {% for item in row: %}
+                <td style="text-align:center">{{item}}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </div>
+
+    <br />
+    <label for="rental-num">Rental Number</label>
+    <input id="rental-num" placeholder="rental-number" />
+    <button onclick="queryRental()" id="rental-q-button">Get Rental Info</button>
+    <br />
 </div>

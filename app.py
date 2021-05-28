@@ -18,6 +18,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
+# conn = psycopg2.connect(DATABASE_DEFAULT)
+
 @app.route("/")
 def connect():
     rows = ''
@@ -125,6 +127,8 @@ def create_rental():
     car = values['car']
     conn = None
     cur = None
+    if values['rental_length'] <= 0:
+        return "You cannot rent a car for less than one day", 500
     # First we must check that the car is available
     check_avail_query = """
         SELECT availability
@@ -138,12 +142,45 @@ def create_rental():
         avail_car = cur.fetchall()
         # Ensure that the car is available
         if len(avail_car) != 1 or avail_car[0][0] is not True:
+            conn.close()
             return "Car is not available", 500
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
         conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG
+        print (error)
         return "Error", 500
 
+    # Check if the customer has any current rentals
+    customer_eligibility = """
+        SELECT *
+        FROM RentalRecord
+        WHERE carReturned IS NULL AND customerID = (
+            SELECT ID
+            FROM Customer
+            WHERE Customer.firstName = %(f_name)s
+                AND Customer.lastName = %(l_name)s
+                AND Customer.birthDate = %(b_day)s
+        );
+    """
+    try:
+        cur.execute(customer_eligibility, {
+            'f_name': customer['first_name'],
+            'l_name': customer['last_name'],
+            'b_day': customer['birthdate']
+        })
+        outgoing_rental = cur.fetchall()
+        if len(outgoing_rental) > 0:
+            conn.close()
+            return "The customer already has an outgoing rental. Please request the car's return before renting them another one.", 500
+    except(Exception, psycopg2.DatabaseError) as error:
+        conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG, 500
+        if error.pgcode == "23502":
+            return "The customer has not yet been registered into the database.", 500
+        print(error)
+        return "Error", 500
     # Second, we must create a rental record and a rental number
     rent_query = """
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
@@ -154,6 +191,7 @@ def create_rental():
             AND Customer.birthDate = %(b_day)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
+    rental_num = _generate_number(16)
     try:
         cur.execute(rent_query, {
             'car_vin': car['vin'],
@@ -163,12 +201,16 @@ def create_rental():
             'todays_date': str(today),
             # rental_length must be in days
             'expected_ret': str(today + timedelta(days=values['rental_length'])),
-            'rental_num': _generate_number(16)
+            'rental_num': rental_num
         })
         conn.commit()
     except(Exception, psycopg2.DatabaseError) as error:
-        print(error)
         conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG, 500
+        if error.pgcode == "23502":
+            return "The customer has not yet been registered into the database.", 500
+        print(error)
         return "Error", 500
 
     # Finally, we must update the availability of the car
@@ -186,7 +228,10 @@ def create_rental():
         print(error)
         conn.close()
         return "Error", 500
-    return "SUCCESS", 201
+    return render_template('rentalSuccess.html',
+                            rental_num=rental_num,
+                            customer_name=customer['first_name'] + " " + customer['last_name']
+                        ), 201
 
 @app.route('/get_rental_cost', methods=['PUT'])
 def get_rental_cost():
@@ -239,6 +284,43 @@ def get_rental_cost():
         conn.close()
         return "Error", 500
     return str(printHelper), 201
+
+# EDIT THIS AAAAAAAA
+@app.route('/get_rental_info')
+def query_rental():
+    car = None
+    rows = ''
+    column_names = None
+    values = request.args.get('search', default = '')
+    print(values) # aaaaaaa
+    #rental_record = values['rental_number']
+    rental_record = json.loads(values)['rental_record']
+    print(rental_record) # aaaaaa
+    rentalInfoQuery = """
+            SELECT Customer.firstname, Customer.lastname, RentalRecord.carRented, RentalRecord.carReturned,
+	        RentalRecord.expectedReturn, RentalRecord.rentalNumber, RentalRecord.totalCost, Car.carType, 
+	        Car.Make, Car.Model, Car.Year, Car.hourlyRate
+            FROM RentalRecord
+	        JOIN Customer ON (Customer.id = RentalRecord.Customerid)
+	        JOIN Car ON (Car.id = RentalRecord.Carid)
+            WHERE RentalRecord.RentalNumber = %s;
+            """      
+    try:
+        conn = psycopg2.connect(DATABASE_DEFAULT)
+        cur = conn.cursor()
+        cur.execute(InfoQuery, (rental_record['rental_number'],)) # (rental_record['rental_number'],))
+        #conn.commit()
+        rows = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return render_template("rent.html", rows=rows, column_names=column_names)
+# END AAAAAAAA
 
 @app.route('/add_car', methods=['POST'])
 def add_car():
@@ -304,7 +386,6 @@ def remove_car():
 @app.route('/car', methods=['GET'])
 def return_car():
     return render_template('car.html')
-
 
 
 @app.route('/update_accidents', methods=['POST'])
