@@ -39,8 +39,22 @@ Run the file by inputting:
 ```
 \i initDatabase.sql
 ```
-Once run, you can now start running your own rental company.
 
+### Final Setup
+In order for the webserver to properly run, you must create a `keys.json` file at the root of the app directory. The `keys.json` file must follow the following format:
+```
+{
+  "dbname": "<database>",
+  "user": "<username>",
+  "password": "<password>"
+}
+```
++ `<database>` must be replaced with the name of the database. If you have followed along, the database for this project would be `carrentaldb`
++ `<username>` must be replaced with your PostgreSQL username.
++ `<password>` must be replaced with the password associated with the PostgreSQL username you specified earlier.
+
+Once run, you can now start running your own rental company.
+---
 ## Running the Webserver
 After completing all previous steps, you are now ready to start running your own rental company. To do so, run the following in a command line:
 ```
