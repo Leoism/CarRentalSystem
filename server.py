@@ -292,6 +292,9 @@ def remove_car():
                     password=options['password'])
         cur = conn.cursor()
         cur.execute(query, (vin,))
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -329,6 +332,9 @@ def update_accidents():
         cur.execute(update_acid, {
             'car_vin': values['vin']
         })
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
