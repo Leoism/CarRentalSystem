@@ -32,9 +32,11 @@ async function rentCar() {
       'Content-Type': 'application/json'
     },
     body: JSON.stringify(options)
-  }).then((res) => {
-    if (res.status === 201)
-      return "Successfully Rented";
+  }).then(async (res) => {
+    if (res.status === 201) {
+      document.querySelector('html').innerHTML = await res.text();
+      return "Success";
+    }
     return res.text();
   });
 
@@ -232,7 +234,7 @@ async function updateAvailability(availabilityStatus) {
   alert(response);
   return response;
 
-  
+
 }
 
 async function queryCars() {
@@ -247,23 +249,23 @@ async function queryCars() {
   let avail = document.getElementById('car_avail').value;
   let rate = document.getElementById('car_rate').value;
 
- if(!vin) vin = ''
- if(!name) name = ''
- if(!make) make = ''
- if(!model) model = ''
- if(!year) year = ''
- if(!acc) acc = ''
- if(!seats) seats = ''
- if(!price) price = ''
- if(!avail) avail = ''
- if(!rate) rate = ''
+  if (!vin) vin = ''
+  if (!name) name = ''
+  if (!make) make = ''
+  if (!model) model = ''
+  if (!year) year = ''
+  if (!acc) acc = ''
+  if (!seats) seats = ''
+  if (!price) price = ''
+  if (!avail) avail = ''
+  if (!rate) rate = ''
   const options = {
     filter: {
       vin, name, make, model, year, acc, seats, price, avail, rate
     }
   };
 
-  const response = await fetch('/queryCars?search=' +  encodeURIComponent(JSON.stringify(options)), {
+  const response = await fetch('/queryCars?search=' + encodeURIComponent(JSON.stringify(options)), {
   }).then((res) => {
     return res.text()
   });
