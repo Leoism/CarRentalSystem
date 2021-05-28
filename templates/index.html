@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <script type="module">import * as PythonApplication3 from "PythonApplication3.py";</script>
+    <script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
 </head>
 
 <style>
@@ -31,36 +31,25 @@
             {% endfor %}
         </table>
     </div>
-    <input id="e_button" placeholder="Enter your name">
-    <button onclick="queryEmployee()" id="greet-button">EmployeeQ</button>
+
     <br />
-    <script>
-        async function queryEmployee() {
-            ein = document.getElementById('e_button').value;
-            document.querySelector('html').innerHTML = await fetch(`/employeeQ?name=${ein}`).then((res) => res.text());
-        }
-    </script>
-    <input id="m_button" placeholder="Enter your name">
-    <button onclick="queryMeeting()" id="greet-button">MeetingQ</button>
+    <input id="car_vin" placeholder="VIN">
+    <input id="car_name" placeholder="Type">
+    <input id="car_make" placeholder="Make">
+    <input id="car_model" placeholder="Model">
+    <input id="car_year" placeholder="Year">
+    <input id="car_acc" placeholder="Accidents">
+    <input id="car_seats" placeholder="Seats">
+    <input id="car_price" placeholder="Hourly Rate Maximum">
+    <select id="car_avail">
+        <option disabled>Avalibility</option>
+        <option value="true">True</option>
+        <option value="false">False</option>
+    </select>
+    <input id="car_rate" placeholder="Rating">
+    <button onclick="queryCars()" id="car-button">Cars</button>
     <br />
-    <script>
-        async function queryMeeting() {
-            document.querySelector('html').innerHTML = await fetch('/meetingQ').then((res) => res.text())
-        }
-    </script>
-    <input id="a_button" placeholder="Enter your name">
-    <button onclick="queryAttendees()" id="greet-button">AttendeesQ</button>
-    <br />
-    <script>
-        async function queryAttendees() {
-            document.querySelector('html').innerHTML = await fetch('/attendeesQ').then((res) => res.text())
-        }
-    </script>
-    <input id="name-box" placeholder="Enter your name">
-    <button id="greet-button">Say Hello</button>
-    <br />
-    <input id="name-box" placeholder="Enter your name">
-    <button id="greet-button">Say Hello</button>
+
 </body>
 
 </html>

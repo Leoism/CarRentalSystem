@@ -42,6 +42,36 @@ async function rentCar() {
   return response;
 }
 
+/** DOES COOL STUFF
+ **/
+async function getRentalCost() {
+    // extract all the input values
+    const rentalNum = document.getElementById('rental-num').value;
+    // ensure they all have a value
+    if (!rentalNum)
+        return "You cannot have null values.";
+    const options = {
+        rental_record: {
+            'rental_number': rentalNum,
+        },
+    };
+    const response = await fetch('/get_rental_cost', {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(options)
+    }).then((res) => {
+        //if (res.status === 201)
+        //    return res.text();
+        return res.text();
+    });
+
+    alert(response);
+    return response;
+}
+
 /**
  * Rates a car using the vin number and rental number provided. Returns 'Successfully Rated'
  * on a successful rating. Otherwise, returns the status error.
@@ -203,7 +233,7 @@ async function updateAvailability(availabilityStatus) {
   const options = {
     vin: carvin,
     status: stat
-  }
+  };
 
   const response = await fetch('/update_availability_status', {
     method: 'PUT',
@@ -221,4 +251,40 @@ async function updateAvailability(availabilityStatus) {
   alert(response);
   return response;
 
+  
+}
+
+async function queryCars() {
+  let vin = document.getElementById('car_vin').value;
+  let name = document.getElementById('car_name').value;
+  let make = document.getElementById('car_make').value;
+  let model = document.getElementById('car_model').value;
+  let year = document.getElementById('car_year').value;
+  let acc = document.getElementById('car_acc').value;
+  let seats = document.getElementById('car_seats').value;
+  let price = document.getElementById('car_price').value;
+  let avail = document.getElementById('car_avail').value;
+  let rate = document.getElementById('car_rate').value;
+
+ if(!vin) vin = ''
+ if(!name) name = ''
+ if(!make) make = ''
+ if(!model) model = ''
+ if(!year) year = ''
+ if(!acc) acc = ''
+ if(!seats) seats = ''
+ if(!price) price = ''
+ if(!avail) avail = ''
+ if(!rate) rate = ''
+  const options = {
+    filter: {
+      vin, name, make, model, year, acc, seats, price, avail, rate
+    }
+  };
+
+  const response = await fetch('/queryCars?search=' +  encodeURIComponent(JSON.stringify(options)), {
+  }).then((res) => {
+    return res.text()
+  });
+  document.querySelector('html').innerHTML = response;
 }

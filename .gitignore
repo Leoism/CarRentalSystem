@@ -1,14 +1,3 @@
-# python files
-bin/
-include/
-lib/
-lib64
-share/
-pyvenv.cfg
-__pycache__
-
-# vscode
-.vscode/
-
-# program files
-keys.json
+/env
+CarRentalDB
+carrentaldump
