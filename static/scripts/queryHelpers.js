@@ -237,6 +237,31 @@ async function updateAvailability(availabilityStatus) {
 
 }
 
+async function updateAccidents() {
+  let carvin = document.getElementById('car-vin').value
+  const options = {
+    vin: carvin,
+  };
+
+  const response = await fetch('/update_accidents', {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status == 201)
+      return "Successfully Updated Incident Status"
+    return res.text()
+  });
+
+  alert(response);
+  return response;
+
+
+}
+
 async function queryCars() {
   let vin = document.getElementById('car_vin').value;
   let name = document.getElementById('car_name').value;
