@@ -34,7 +34,7 @@ To install Flask, run `pip install Flask`
 To install Psycopg2, run `pip install psycopg2` 
 
 ### Database Setup
-To setup the database, navigate to your PostgreSQL CLI. Once in the command line, run our `initDatabase.sql` file to create the `carrentaldatabase`.
+To setup the database, navigate to your PostgreSQL CLI. In other words, open up psql. Once in the postgres command line, run our `initDatabase.sql` file to create the `carrentaldatabase`.
 Run the file by inputting:
 ```
 \i initDatabase.sql
