@@ -21,6 +21,7 @@ This website acts as a tool for a car rental agent to use. The agents are capabl
 + Viewing the Car Inventory
 ---
 ## Setting up the Project and Environment
+Before proceeding any further, ensure that you are in the root directory of the app.
 
 ### Python Setup
 The project has been tested to work on Python 3.7+. Using other versions of Python may yield different results.
@@ -56,7 +57,7 @@ In order for the webserver to properly run, you must create a `keys.json` file a
 Once run, you can now start running your own rental company.
 ---
 ## Running the Webserver
-After completing all previous steps, you are now ready to start running your own rental company. To do so, run the following in a command line:
+After completing all previous steps, you are now ready to start running your own rental company. To do so, ensure that you are in the root directory of the app and run the following in a command line:
 ```
 python3 server.py
 ```
