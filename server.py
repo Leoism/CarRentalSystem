@@ -148,7 +148,7 @@ def create_rental():
             return "Car is not available", 500
     except (Exception, psycopg2.DatabaseError) as error:
         conn.close()
-        if hasattr(error, 'pgcode'):
+        if not hasattr(error, 'pgcode'):
             return MISC_ERROR_MSG
         print (error)
         return "Error", 500
