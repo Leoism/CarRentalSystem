@@ -144,14 +144,45 @@ def create_rental():
         avail_car = cur.fetchall()
         # Ensure that the car is available
         if len(avail_car) != 1 or avail_car[0][0] is not True:
+            conn.close()
             return "Car is not available", 500
     except (Exception, psycopg2.DatabaseError) as error:
+        conn.close()
         if hasattr(error, 'pgcode'):
             return MISC_ERROR_MSG
         print (error)
-        conn.close()
         return "Error", 500
 
+    # Check if the customer has any current rentals
+    customer_eligibility = """
+        SELECT *
+        FROM RentalRecord
+        WHERE carReturned IS NULL AND customerID = (
+            SELECT ID
+            FROM Customer
+            WHERE Customer.firstName = %(f_name)s
+                AND Customer.lastName = %(l_name)s
+                AND Customer.birthDate = %(b_day)s
+        );
+    """
+    try:
+        cur.execute(customer_eligibility, {
+            'f_name': customer['first_name'],
+            'l_name': customer['last_name'],
+            'b_day': customer['birthdate']
+        })
+        outgoing_rental = cur.fetchall()
+        if len(outgoing_rental) > 0:
+            conn.close()
+            return "The customer already has an outgoing rental. Please request the car's return before renting them another one.", 500
+    except(Exception, psycopg2.DatabaseError) as error:
+        conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG, 500
+        if error.pgcode == "23502":
+            return "The customer has not yet been registered into the database.", 500
+        print(error)
+        return "Error", 500
     # Second, we must create a rental record and a rental number
     rent_query = """
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
@@ -180,7 +211,8 @@ def create_rental():
         if not hasattr(error, 'pgcode'):
             return MISC_ERROR_MSG, 500
         if error.pgcode == "23502":
-            return "The customer does not exist.", 500
+            return "The customer has not yet been registered into the database.", 500
+        print(error)
         return "Error", 500
 
     # Finally, we must update the availability of the car
