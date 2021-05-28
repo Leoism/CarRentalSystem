@@ -1,16 +1,21 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="/static/scripts/navigation_template.js"></script>
+    <link rel="stylesheet" href="/static/styles/navbar.css">
 </head>
+
 <body style="background-color: #e5e5e5;">
+    <nav-bar></nav-bar>
     <div>
         <h1 class="header">Add Car Information</h1>
-    
+
         <label for="vin">VIN</label>
-        <input id="vin" type="text" minlength="11" maxlength="17"/>
+        <input id="vin" type="text" minlength="11" maxlength="17" />
         <br>
         <label for="cartype">Car Type</label>
         <select id="cartype">
@@ -27,13 +32,13 @@
         <input id="model" type="text" />
         <br>
         <label for="year">Year</label>
-        <input id="year" type="number" min="1950" max="2022"/>
+        <input id="year" type="number" min="1950" max="2022" />
         <br>
         <label for="numaccidents"># of Accidents</label>
-        <input id="numaccidents" type="number" min="0"/>
+        <input id="numaccidents" type="number" min="0" />
         <br>
         <label for="seats"># of Seats</label>
-        <input id="seats" type="number" min="1"/>
+        <input id="seats" type="number" min="1" />
         <br>
         <label for="hourlyrate">Hourly Rate</label>
         <input id="hourlyrate" type="number" min="0" />
@@ -43,16 +48,14 @@
         <br>
         <button onclick="addCar()">Add Car</button>
     </div>
-    
+
     <div>
         <h1 class="header">Remove a Car by Vin</h1>
         <label for="r-vin">VIN</label>
-        <input id="r-vin" type="text" minlength="11" maxlength="17"/>
+        <input id="r-vin" type="text" minlength="11" maxlength="17" />
         <button onclick="removeCar()">Remove Car</button>
     </div>
 </body>
 <script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
+
 </html>
-
-
-
