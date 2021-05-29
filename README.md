@@ -25,34 +25,33 @@ Before proceeding any further, ensure that you are in the root directory of the 
 
 ### Python Setup
 The project has been tested to work on Python 3.7+. Using other versions of Python may yield different results.
-This project also requires the Python package manager `pip` to be able to successfully install the packes.
+This project also requires the Python package manager `pip` to be able to successfully install the packages.
 
-The project requires the following two packes to be installed through `pip` in order for CarRentalSystem to work:
-1. Flask - Hosts a web server where the user can then navigate the website
-2. Psycopg2 - Library that helps connect to PostgreSQL
-
-To install Flask, run `pip install Flask`
-To install Psycopg2, run `pip install psycopg2` 
+The project requires many packages to be installed through `pip` in order for CarRentalSystem to work.
+To ease the installation process, we have provided a `requirements.txt` file. To install the packages run:
+```
+pip3 install -r requirements.txt
+```
 
 ### Database Setup
-To setup the database, navigate to your PostgreSQL CLI. In other words, open up psql. Once in the postgres command line, run our `initDatabase.sql` file to create the `carrentaldatabase`.
+To setup the database, navigate to your PostgreSQL CLI. In other words, open up psql. Once in the postgres command line, run our `initDatabase.sql` file to create the `carrentaldb`.
 Run the file by inputting:
 ```
 \i initDatabase.sql
 ```
 
 ### Final Setup
-In order for the webserver to properly run, you must create a `keys.json` file at the root of the app directory. The `keys.json` file must follow the following format:
+In order for the webserver to properly run, you must create a `.env` file at the root of the app directory. The `.env` file must follow the following format:
 ```
-{
-  "dbname": "<database>",
-  "user": "<username>",
-  "password": "<password>"
-}
+USERNAME=<username>
+PASSWORD=<password>
+ADDRESS=<address>
+DATABASE=<database>
 ```
-+ `<database>` must be replaced with the name of the database. If you have followed along, the database for this project would be `carrentaldb`
 + `<username>` must be replaced with your PostgreSQL username.
 + `<password>` must be replaced with the password associated with the PostgreSQL username you specified earlier.
++ `<address>` must be replaces with the address your database is located at. When running locally, this will usually be `localhost` or `127.0.0.1` 
++ `<database>` must be replaced with the name of the database. If you have followed along, the database for this project would be `carrentaldb`
 
 Once run, you can now start running your own rental company.
 
