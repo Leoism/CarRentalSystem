@@ -97,22 +97,29 @@ def add_rating():
         Creates rating associated with the rental and car being reviewed.
     """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
-                VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %s), %s , %s);"""
+                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber = %s), %s , %s);"""
     values = request.json
     # extract customer
     rental_record = values['rental_record']
     # and car objects from the json
-    car = values['car']
     conn = None
     try:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
-        cur.execute(query, (car['vin'], rental_record['rental_number'], values['rating'],))
+        cur.execute(query, (rental_record['rental_number'], rental_record['rental_number'], values['rating'],))
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
         conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG
+        if error.pgcode == '23502':
+            return "The Rental Number does not seem to exist. Try Again."
+        if error.pgcode == '23505':
+            return "There is already a rating for this rental. You cannot rate more than once."
+        if error.pgcode == '22P02':
+            return "It seems some of your values are not valid. Please try again."
+        print(error.pgcode)
         return "Error", 500
     if conn is not None:
         conn.close()
@@ -295,6 +302,9 @@ def remove_car():
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(query, (vin,))
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -311,27 +321,39 @@ def return_car():
 
 
 
-@app.route('/update_accidents', methods=['POST'])
+@app.route('/update_accidents', methods=['PUT'])
 def update_accidents():
     """
         Update amount of accidents on a car. Increments numAccidents by one, as it is impossible to ethically undo an accident.
     """
- # Update the accidents of the car
+    values = request.json
+     # Update the accidents of the car
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN = %s;
+        WHERE VIN = %(car_vin)s;
         """
-    try:
-        # update the car accidents
-        cur.execute(update_acid, (car['vin'],))
+    try: 
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(update_acid, {
+            'car_vin': values['vin']
+        })
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
-        conn.close()
-    except(Exception, psycopg2.DatabaseError) as error:
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
         return "Error", 500
-    return "SUCCESS", 201
+    if conn is not None:
+        conn.close()
+    return "Successfully Added an Incident to a Car", 200
 
 
 @app.route('/queryCars')

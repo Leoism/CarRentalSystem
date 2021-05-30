@@ -12,8 +12,28 @@ async function rentCar() {
   const carVin = document.getElementById('car-vin').value;
   const rentalLength = document.getElementById('rental-length').value;
   // ensure they all have a value
-  if (!firstName || !lastName || !birthdate || !carVin || !rentalLength)
-    return "You cannot have null values.";
+  if (!firstName || !lastName || !birthdate || !carVin || !rentalLength) {
+    alert('You cannot have empty fields.')
+    return 'You cannot have null values.';
+  }
+
+  // checks for valid data
+  if (carVin.lenth > 17) {
+    alert('VIN number is too long');
+    return 'VIN number is too long';
+  } else if (carVin.length < 11) {
+    alert('VIN number is too short');
+    return 'VIN number is too short';
+  }
+
+  if (rentalLength < 1) {
+    alert('You cannot rent a car for less than 1 day.');
+    return 'You cannot rent a car for less than 1 day.';
+  } else if (rentalLength > 30) {
+    alert('You cannot rent a car for more than 30 days.');
+    return 'You cannot rent a car for more than 30 days.';
+  }
+
   const options = {
     customer: {
       'first_name': firstName,
@@ -25,6 +45,7 @@ async function rentCar() {
     },
     rental_length: parseInt(rentalLength)
   };
+
   const response = await fetch('/create_rental', {
     method: 'POST',
     headers: {
@@ -53,18 +74,19 @@ async function rentCar() {
 async function rateRental() {
   const rating = document.getElementById('rating').value;
   const rentalNumber = document.getElementById('rental-number').value;
-  const carVIN = document.getElementById('car-vin').value;
 
   const isRatingValid = rating == undefined || rating < 0 || rating > 5;
-  if (isRatingValid || !rentalNumber || !carVIN) {
-    alert("You cannot have null values");
-    return "You cannot have null values";
+  if (isRatingValid || !rentalNumber) {
+    alert('Your values do not seem to be correct. Try Again.');
+    return 'Your values do not seem to be correct. Try Again.';
+  }
+
+  if (rentalNumber.length != 16) {
+    alert('Rental Numbers are 16 characters long. This is not 16 characters. Ensure you have the correct number.');
+    return 'Rental Numbers are 16 characters long. This is not 16 characters. Ensure you have the correct number.';
   }
 
   const options = {
-    car: {
-      vin: carVIN
-    },
     rental_record: {
       rental_number: rentalNumber
     },
@@ -80,7 +102,7 @@ async function rateRental() {
     body: JSON.stringify(options)
   }).then((res) => {
     if (res.status === 201)
-      return "Successfully Rated";
+      return 'Successfully Rated';
     return res.text();
   });
 
@@ -107,26 +129,26 @@ async function addCar() {
 
   // checks for valid data
   if (vin.lenth > 17) {
-    alert("VIN number is too long");
-    return "VIN number is too long";
+    alert('VIN number is too long');
+    return 'VIN number is too long';
   } else if (vin.length < 11) {
-    alert("VIN number is too short");
-    return "VIN number is too short";
+    alert('VIN number is too short');
+    return 'VIN number is too short';
   }
 
   if (numaccidents < 0) { // num accidents > 0
-    alert("Number of accidents can't be less than 0");
-    return "Number of accidents can't be less than 0";
+    alert(`Number of accidents can't be less than 0`);
+    return `Number of accidents can't be less than 0`;
   }
 
   if (seats < 1) { // number of seats > 1
-    alert("Car can't have less than 1 seat");
-    return "Car can't have less than 1 seat";
+    alert(`Car can't have less than 1 seat`);
+    return `Car can't have less than 1 seat`;
   }
 
   if (hourlyrate < 0) { // hourly rate > 1
-    alert("Car can't be less than $0/hr");
-    return "Car can't be less than $0/hr";
+    alert(`Car can't be less than $0 / hr`);
+    return `Car can't be less than $0 / hr`;
   }
 
   const response = await fetch('/add_car', {
@@ -138,7 +160,7 @@ async function addCar() {
     body: JSON.stringify(options)
   }).then((res) => {
     if (res.status === 201)
-      return "Successfully Added Car";
+      return 'Successfully Added Car';
     return res.text();
   });
   alert(response);
@@ -153,6 +175,14 @@ async function removeCar() {
     }
   };
 
+  if (vin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (vin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
+
   const response = await fetch('/remove_car', {
     method: 'DELETE',
     headers: {
@@ -162,7 +192,7 @@ async function removeCar() {
     body: JSON.stringify(options)
   }).then((res) => {
     if (res.status === 200)
-      return "Successfully Removed Car";
+      return 'Successfully Removed Car';
     return res.text();
   });
   alert(response);
@@ -177,7 +207,7 @@ async function addCustomer() {
   const stateField = document.getElementById('cust-state').value
 
   if (!fname || !lname || !bday || !streetField || !cityField || !stateField) {
-    console.log("you cannot have null values")
+    console.log('you cannot have null values')
   }
 
   const customerInfo = {
@@ -198,7 +228,7 @@ async function addCustomer() {
     body: JSON.stringify(customerInfo)
   }).then((res) => {
     if (res.status == 201)
-      return "successfully Added Customer"
+      return 'successfully Added Customer'
     return res.text()
   });
 
@@ -227,7 +257,40 @@ async function updateAvailability(availabilityStatus) {
     body: JSON.stringify(options)
   }).then((res) => {
     if (res.status == 201)
-      return "Successfully Updated Availability Status"
+      return 'Successfully Updated Availability Status'
+    return res.text()
+  });
+
+  alert(response);
+  return response;
+
+
+}
+
+async function updateAccidents() {
+  let carvin = document.getElementById('car-vin').value
+  const options = {
+    vin: carvin,
+  };
+
+  if (carvin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (carvin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
+
+  const response = await fetch('/update_accidents', {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status == 201)
+      return "Successfully Updated Incident Status"
     return res.text()
   });
 
