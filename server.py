@@ -299,6 +299,9 @@ def remove_car():
                     password=options['password'])
         cur = conn.cursor()
         cur.execute(query, (vin,))
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -315,27 +318,39 @@ def return_car():
 
 
 
-@app.route('/update_accidents', methods=['POST'])
+@app.route('/update_accidents', methods=['PUT'])
 def update_accidents():
     """
         Update amount of accidents on a car. Increments numAccidents by one, as it is impossible to ethically undo an accident.
     """
- # Update the accidents of the car
+    values = request.json
+     # Update the accidents of the car
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN = %s;
+        WHERE VIN = %(car_vin)s;
         """
-    try:
-        # update the car accidents
-        cur.execute(update_acid, (car['vin'],))
+    try: 
+        conn = psycopg2.connect(
+                    dbname=options['dbname'],
+                    user=options['user'],
+                    password=options['password'])
+        cur = conn.cursor()
+        cur.execute(update_acid, {
+            'car_vin': values['vin']
+        })
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
-        conn.close()
-    except(Exception, psycopg2.DatabaseError) as error:
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
         return "Error", 500
-    return "SUCCESS", 201
+    if conn is not None:
+        conn.close()
+    return "Successfully Added an Incident to a Car", 200
 
 
 @app.route('/queryCars')

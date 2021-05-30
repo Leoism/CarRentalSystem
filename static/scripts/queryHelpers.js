@@ -175,6 +175,14 @@ async function removeCar() {
     }
   };
 
+  if (vin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (vin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
+
   const response = await fetch('/remove_car', {
     method: 'DELETE',
     headers: {
@@ -250,6 +258,39 @@ async function updateAvailability(availabilityStatus) {
   }).then((res) => {
     if (res.status == 201)
       return 'Successfully Updated Availability Status'
+    return res.text()
+  });
+
+  alert(response);
+  return response;
+
+
+}
+
+async function updateAccidents() {
+  let carvin = document.getElementById('car-vin').value
+  const options = {
+    vin: carvin,
+  };
+
+  if (carvin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (carvin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
+
+  const response = await fetch('/update_accidents', {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    if (res.status == 201)
+      return "Successfully Updated Incident Status"
     return res.text()
   });
 
