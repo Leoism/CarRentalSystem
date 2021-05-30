@@ -153,6 +153,14 @@ async function removeCar() {
     }
   };
 
+  if (vin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (vin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
+
   const response = await fetch('/remove_car', {
     method: 'DELETE',
     headers: {
@@ -242,6 +250,14 @@ async function updateAccidents() {
   const options = {
     vin: carvin,
   };
+
+  if (carvin.lenth > 17) {
+    alert("VIN number is too long");
+    return "VIN number is too long";
+  } else if (carvin.length < 11) {
+    alert("VIN number is too short");
+    return "VIN number is too short";
+  }
 
   const response = await fetch('/update_accidents', {
     method: 'PUT',
