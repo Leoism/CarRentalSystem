@@ -82,12 +82,11 @@ def add_rating():
         Creates rating associated with the rental and car being reviewed.
     """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
-                VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %s), %s , %s);"""
+                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber = %s), %s , %s);"""
     values = request.json
     # extract customer
     rental_record = values['rental_record']
     # and car objects from the json
-    car = values['car']
     conn = None
     try:
         conn = psycopg2.connect(
@@ -95,12 +94,20 @@ def add_rating():
                     user=options['user'],
                     password=options['password'])
         cur = conn.cursor()
-        cur.execute(query, (car['vin'], rental_record['rental_number'], values['rating'],))
+        cur.execute(query, (rental_record['rental_number'], rental_record['rental_number'], values['rating'],))
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
         conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG
+        if error.pgcode == '23502':
+            return "The Rental Number does not seem to exist. Try Again."
+        if error.pgcode == '23505':
+            return "There is already a rating for this rental. You cannot rate more than once."
+        if error.pgcode == '22P02':
+            return "It seems some of your values are not valid. Please try again."
+        print(error.pgcode)
         return "Error", 500
     if conn is not None:
         conn.close()
