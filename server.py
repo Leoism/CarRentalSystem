@@ -537,6 +537,14 @@ def update_availability_status():
 def renderAvailabiliity():
     return render_template("updateAvailabilityStatus.html")
 
+@app.route('/agent', methods=["GET"])
+def agent_template():
+    return render_template("AgentPage.html")
+
+@app.route('/login', methods=["GET"])
+def login_template():
+    return render_template("LoginPage.html")
+
 if __name__ == '__main__':
     app.run()
     # add_customer()
