@@ -334,10 +334,7 @@ def update_accidents():
         WHERE VIN = %(car_vin)s;
         """
     try: 
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(update_acid, {
             'car_vin': values['vin']
