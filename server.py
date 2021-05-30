@@ -1,20 +1,35 @@
 #!/usr/bin/python
+import os
 import psycopg2
 import json
 from flask import Flask, render_template, request
+from flask_sqlalchemy import SQLAlchemy
+from flask_heroku import Heroku
 from datetime import datetime, timedelta
 import time
 import random
+from dotenv import load_dotenv
 
 # from config import config
-app = Flask(__name__, template_folder='templates')
+app = Flask(__name__)
 MISC_ERROR_MSG = "An unexpected error occurred. This is not related to the database. Check your inputs again."
 # Allows us to not have to restart Flask on every change
 # Flask will automatically restart
 app.debug = True
-f = open('./keys.json')
-options = json.load(f)
-f.close()
+
+# load up the .env file on local
+if app.debug:
+    load_dotenv()
+
+database_url = 'postgres://{username}:{password}@{address}:5432/{database}'.format(
+    username=os.getenv('USERNAME'),
+    password=os.getenv('PASSWORD'),
+    address=os.getenv('ADDRESS'),
+    database=os.getenv('DATABASE')
+)
+app.config['SQLALCHEMY_DATABASE_URI'] = database_url
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
 
 @app.route("/")
 def connect():
@@ -28,7 +43,7 @@ def connect():
 
         # connect to the PostgreSQL server
         # print('Connecting to the PostgreSQL database...')
-        conn = psycopg2.connect(dbname=options['dbname'], user=options['user'], password=options['password'])
+        conn = psycopg2.connect(database_url)
 
         # create a cursor
         cur = conn.cursor()
@@ -89,10 +104,7 @@ def add_rating():
     # and car objects from the json
     conn = None
     try:
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(query, (rental_record['rental_number'], rental_record['rental_number'], values['rating'],))
         conn.commit()
@@ -142,10 +154,7 @@ def create_rental():
         WHERE Car.availability = 'true' AND Car.VIN = %s;
     """
     try:
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(check_avail_query, (car['vin'],))
         avail_car = cur.fetchall()
@@ -264,10 +273,7 @@ def add_car():
     conn = None
 
     try: 
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate, availability))
         conn.commit()
@@ -293,10 +299,7 @@ def remove_car():
     conn = None
 
     try: 
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(query, (vin,))
         retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
@@ -331,10 +334,7 @@ def update_accidents():
         WHERE VIN = %(car_vin)s;
         """
     try: 
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(update_acid, {
             'car_vin': values['vin']
@@ -398,10 +398,7 @@ def query_cars():
     #show_car_query += 'GROUP BY ratingrecord.carid,Car.ID, Car.VIN, Car.CarType, Car.Make, Car.Model, Car.Year;' 
     show_car_query += ';'
     try:
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(show_car_query, { #implementation type1
             'car_vin': filter['vin'],
@@ -459,10 +456,7 @@ def _generate_number(length):
         FROM RentalRecord;
     """
     try:
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(rental_query)
         rental_records = cur.fetchall()
@@ -490,10 +484,7 @@ def add_customer():
 
     conn = None
     try:
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         cur = conn.cursor()
         cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['bDay'], values['street'], values['city'], values['state'],))
         conn.commit()
@@ -523,10 +514,7 @@ def update_availability_status():
     """
     conn = None
     try:
-        conn = psycopg2.connect(
-                    dbname=options['dbname'],
-                    user=options['user'],
-                    password=options['password'])
+        conn = psycopg2.connect(database_url)
         
         cur = conn.cursor()
         cur.execute(check_car_exists, (values['vin'],))
