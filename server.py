@@ -97,7 +97,7 @@ def add_rating():
         Creates rating associated with the rental and car being reviewed.
     """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
-                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber = %s), %s , %s);"""
+                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber ILIKE %s), %s , %s);"""
     values = request.json
     # extract customer
     rental_record = values['rental_record']
@@ -151,7 +151,7 @@ def create_rental():
     check_avail_query = """
         SELECT availability
         FROM Car
-        WHERE Car.availability = 'true' AND Car.VIN = %s;
+        WHERE Car.availability = 'true' AND Car.VIN ILIKE %s;
     """
     try:
         conn = psycopg2.connect(database_url)
@@ -176,16 +176,18 @@ def create_rental():
         WHERE carReturned IS NULL AND customerID = (
             SELECT ID
             FROM Customer
-            WHERE Customer.firstName = %(f_name)s
-                AND Customer.lastName = %(l_name)s
-                AND Customer.birthDate = %(b_day)s
+            WHERE Customer.licenseID ILIKE %(license_id)s AND
+            Customer.firstName ILIKE %(first_name)s AND 
+            Customer.lastName ILIKE %(last_name)s AND 
+            Customer.birthdate = %(birthdate)s
         );
     """
     try:
         cur.execute(customer_eligibility, {
-            'f_name': customer['first_name'],
-            'l_name': customer['last_name'],
-            'b_day': customer['birthdate']
+            'license_id': customer['license_id'],
+            'first_name': customer['first_name'],
+            'last_name': customer['last_name'],
+            'birthdate': customer['birthdate']
         })
         outgoing_rental = cur.fetchall()
         if len(outgoing_rental) > 0:
@@ -204,20 +206,21 @@ def create_rental():
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
         VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s),
         (SELECT Customer.ID FROM Customer
-        WHERE Customer.firstName = %(f_name)s
-            AND Customer.lastName = %(l_name)s
-            AND Customer.birthDate = %(b_day)s), 
+        WHERE Customer.licenseID ILIKE %(license_id)s AND
+            Customer.firstName ILIKE %(first_name)s AND 
+            Customer.lastName ILIKE %(last_name)s AND
+            Customer.birthdate = %(birthdate)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
     rental_num = _generate_number(16)
     try:
         cur.execute(rent_query, {
             'car_vin': car['vin'],
-            'f_name': customer['first_name'], 
-            'l_name': customer['last_name'],
-            'b_day': customer['birthdate'],
             'todays_date': str(today),
-            # rental_length must be in days
+            'license_id': customer['license_id'],
+            'first_name': customer['first_name'],
+            'last_name': customer['last_name'],   
+            'birthdate': customer['birthdate'],    # rental_length must be in days
             'expected_ret': str(today + timedelta(days=values['rental_length'])),
             'rental_num': rental_num
         })
@@ -235,7 +238,7 @@ def create_rental():
     update_avail = """
         UPDATE Car
         SET availability = 'false'
-        WHERE Car.VIN = %s;
+        WHERE Car.VIN ILIKE %s;
         """
     try:
         # update the availability of the car to be unavialable
@@ -251,11 +254,100 @@ def create_rental():
                             customer_name=customer['first_name'] + " " + customer['last_name']
                         ), 201
 
+@app.route('/get_rental_info')
+def query_rental():
+    rows = ''
+    column_names = None
+    values = request.args.get('search', default = '')
+    rental_record = json.loads(values)['rental_record']
+
+    rentalInfoQuery = """
+            SELECT Customer.firstname, Customer.lastname, RentalRecord.carRented, RentalRecord.carReturned,
+	        RentalRecord.expectedReturn, RentalRecord.rentalNumber, RentalRecord.totalCost, Car.carType, 
+	        Car.Make, Car.Model, Car.Year, Car.hourlyRate
+            FROM RentalRecord
+                JOIN Customer ON (Customer.id = RentalRecord.CustomerID)
+                JOIN Car ON (Car.id = RentalRecord.CarID)
+            WHERE RentalRecord.RentalNumber ILIKE %s;
+            """      
+    try:
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor()
+        cur.execute(rentalInfoQuery, (rental_record['rental_number'],))
+        rows = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return render_template("rent.html", rows=rows, column_names=column_names)
+
+@app.route('/get_rental_cost', methods=['PUT'])
+def get_rental_cost():
+    printHelper = ""
+    values = request.json
+    rental_record = values['rental_record']
+    returnQuery = """
+        UPDATE RentalRecord
+        SET carReturned = CURRENT_TIMESTAMP
+        WHERE rentalNumber ILIKE %s AND carReturned IS NULL;
+    """
+    availabilityQuery = """
+        UPDATE Car
+        SET availability = 't'
+        WHERE Car.id = (SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber ILIKE %s AND carreturned IS NULL);
+    """
+    updateStatusQuery = """
+        UPDATE RentalRecord
+        SET totalCost = (SELECT (T1.initCost + T2.overtime)::numeric(8, 2) AS finalCost
+        FROM (SELECT CASE
+        WHEN Temp.overtime < 0 THEN COALESCE(Temp.overtime - Temp.overtime, 0)
+        WHEN Temp.overtime >= 0 THEN Temp.overtime
+        END AS overtime
+        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carReturned - RentalRecord.expectedReturn)/3600 * 75)::float AS overtime
+        FROM RentalRecord
+        WHERE RentalRecord.RentalNumber = %s) AS Temp
+        GROUP BY Temp.overtime) AS T2
+        JOIN (SELECT Tempy.initCost
+        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.carReturned)/3600 * Car.hourlyRate * -1)::float AS initCost
+        FROM RentalRecord
+        JOIN Car on (RentalRecord.carID = Car.ID)
+        WHERE RentalRecord.RentalNumber = %s) AS Tempy
+        GROUP BY Tempy.initCost) AS T1 ON TRUE)
+        WHERE RentalRecord.RentalNumber = %s
+        RETURNING totalCost;
+    """
+
+    conn = None
+    try:
+        conn = psycopg2.connect(database_url)
+        
+        cur = conn.cursor()
+        cur.execute(availabilityQuery, (rental_record['rental_number'],))
+        cur.execute(returnQuery, (rental_record['rental_number'],))
+        cur.execute(updateStatusQuery, (rental_record['rental_number'],rental_record['rental_number'],rental_record['rental_number'],))
+        checkExec = cur.fetchall()
+        if len(checkExec) != 0:
+            conn.commit()
+        else:
+            conn.close()
+            return "user inputted rental number doesn't exist in the db", 500
+        printHelper = "Success, total cost is: " + str(checkExec[0][0])
+        conn.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return str(printHelper), 200
+
 @app.route('/add_car', methods=['POST'])
 def add_car():
 
     query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'true');"""
     values = request.json
 
     car = values['car']
@@ -268,14 +360,13 @@ def add_car():
     numaccidents = car['numaccidents']
     seats = car['seats']
     hourlyrate = car['hourlyrate']
-    availability = car['availability']
 
     conn = None
 
     try: 
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
-        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate, availability))
+        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate))
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -289,7 +380,7 @@ def add_car():
 @app.route('/remove_car', methods=['DELETE'])
 def remove_car():
     query = """DELETE FROM Car
-               WHERE vin = %s; """
+               WHERE vin ILIKE %s; """
 
     values = request.json
     
@@ -331,7 +422,7 @@ def update_accidents():
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN = %(car_vin)s;
+        WHERE VIN ILIKE %(car_vin)s;
         """
     try: 
         conn = psycopg2.connect(database_url)
@@ -377,13 +468,13 @@ def query_cars():
     else:
         show_car_query += 'Car.NumAccidents >= 0 '
     if filter['vin'] != '': 
-        show_car_query += 'AND Car.VIN =  %(car_vin)s '
+        show_car_query += 'AND Car.VIN ILIKE  %(car_vin)s '
     if filter['name'] != '': 
-        show_car_query += 'AND CarType.Name = %(car_name)s '
+        show_car_query += 'AND CarType.Name ILIKE %(car_name)s '
     if filter['make'] != '': 
-        show_car_query += 'AND Car.Make = %(car_make)s '
+        show_car_query += 'AND Car.Make ILIKE %(car_make)s '
     if filter['model'] != '': 
-        show_car_query += 'AND Car.Model = %(car_model)s '
+        show_car_query += 'AND Car.Model ILIKE %(car_model)s '
     if filter['year'] != '': 
         show_car_query += 'AND Car.Year = %(car_year)s '
     if filter['seats'] != '': 
@@ -478,15 +569,15 @@ def _generate_number(length):
 def add_customer():
     values = request.json
     addCustomerQuery = """
-        INSERT INTO Customer (firstname, lastname, birthdate, street, city, state)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO Customer (firstname, lastname, licenseID, birthdate, street, city, state)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
 
     conn = None
     try:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
-        cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['bDay'], values['street'], values['city'], values['state'],))
+        cur.execute(addCustomerQuery, (values['first_name'], values['last_name'], values['license_id'], values['birthdate'], values['street'], values['city'], values['state'],))
         conn.commit()
         conn.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -505,12 +596,12 @@ def update_availability_status():
     updateStatusQuery = """
         UPDATE Car
         SET availability = %s
-        WHERE vin = %s;
+        WHERE vin ILIKE %s;
     """
     check_car_exists = """
         SELECT vin 
         FROM Car 
-        WHERE vin = %s;
+        WHERE vin ILIKE %s;
     """
     conn = None
     try:
