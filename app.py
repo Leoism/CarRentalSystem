@@ -196,6 +196,7 @@ def create_rental():
         (SELECT Customer.ID FROM Customer
         WHERE Customer.firstName = %(f_name)s
             AND Customer.lastName = %(l_name)s
+            AND Customer.licenseid = %(d_license)s
             AND Customer.birthDate = %(b_day)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
@@ -205,6 +206,7 @@ def create_rental():
             'car_vin': car['vin'],
             'f_name': customer['first_name'], 
             'l_name': customer['last_name'],
+            'd_license': customer['license'],
             'b_day': customer['birthdate'],
             'todays_date': str(today),
             # rental_length must be in days
@@ -251,6 +253,11 @@ def get_rental_cost():
         SET carReturned = CURRENT_TIMESTAMP
         WHERE rentalNumber = %s AND carReturned IS NULL;
     """
+    availabilityQuery = """
+        UPDATE Car
+        SET availability = 't'
+        WHERE Car.id = (SELECT RentalRecord.carid FROM RentalRecord WHERE rentalNumber = %s AND carreturned IS NULL);
+    """
     updateStatusQuery = """
         UPDATE RentalRecord
         SET totalCost = (SELECT (T1.initCost + T2.overtime)::numeric(8, 2) AS finalCost
@@ -263,7 +270,7 @@ def get_rental_cost():
         WHERE RentalRecord.RentalNumber = %s) AS Temp
         GROUP BY Temp.overtime) AS T2
         JOIN (SELECT Tempy.initCost
-        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.expectedReturn)/3600 * Car.hourlyRate * -1)::float AS initCost
+        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.carReturned)/3600 * Car.hourlyRate * -1)::float AS initCost
         FROM RentalRecord
         JOIN Car on (RentalRecord.carID = Car.ID)
         WHERE RentalRecord.RentalNumber = %s) AS Tempy
@@ -279,6 +286,7 @@ def get_rental_cost():
         #cur.execute(check_car_exists, (values['vin'],))
         #isAvail = cur.fetchall()
         #print(isAvail)
+        cur.execute(availabilityQuery, (rental_record['rental_number'],))
         cur.execute(returnQuery, (rental_record['rental_number'],))
         cur.execute(updateStatusQuery, (rental_record['rental_number'],rental_record['rental_number'],rental_record['rental_number'],))
         checkExec = cur.fetchall()
@@ -555,15 +563,15 @@ def _generate_number(length):
 def add_customer():
     values = request.json
     addCustomerQuery = """
-        INSERT INTO Customer (firstname, lastname, birthdate, street, city, state)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO Customer (firstname, lastname, licenseid, birthdate, street, city, state)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
 
     conn = None
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
-        cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['bDay'], values['street'], values['city'], values['state'],))
+        cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['licenseD'], values['bDay'], values['street'], values['city'], values['state'],))
         conn.commit()
         conn.close()
     except (Exception, psycopg2.DatabaseError) as error:

@@ -8,11 +8,12 @@ async function rentCar() {
   // extract all the input values
   const firstName = document.getElementById('cust-fname').value;
   const lastName = document.getElementById('cust-lname').value;
+  const license = document.getElementById('cust-lic').value;
   const birthdate = document.getElementById('cust-bday').value;
   const carVin = document.getElementById('car-vin').value;
   const rentalLength = document.getElementById('rental-length').value;
   // ensure they all have a value
-  if (!firstName || !lastName || !birthdate || !carVin || !rentalLength) {
+  if (!firstName || !lastName || !license || !birthdate || !carVin || !rentalLength) {
     alert('You cannot have empty fields.')
     return 'You cannot have null values.';
   }
@@ -38,6 +39,7 @@ async function rentCar() {
     customer: {
       'first_name': firstName,
       'last_name': lastName,
+      license,
       birthdate,
     },
     car: {
@@ -63,6 +65,39 @@ async function rentCar() {
 
   alert(response);
   return response;
+}
+
+/** For the FIRST time this button is clicked, a customer is "returning" a car that was rented. 
+ * This triggers the query to set NOW as the timestamp in which the car is returned.
+ * It also returns the total cost of the rental to the user. 
+ * For SUBSEQUENT calls, it only returns the total cost of the rental to the user. 
+ **/
+async function getRentalCost() {
+    // extract all the input values
+    const rentalNum = document.getElementById('rental-num1').value;
+    // ensure they all have a value
+    if (!rentalNum)
+        return "You cannot have null values.";
+    const options = {
+        rental_record: {
+            'rental_number': rentalNum,
+        },
+    };
+    const response = await fetch('/get_rental_cost', {
+        method: 'PUT',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(options)
+    }).then((res) => {
+        //if (res.status === 201)
+        //    return res.text();
+        return res.text();
+    });
+
+    alert(response);
+    return response;
 }
 
 /**
@@ -166,6 +201,24 @@ async function addCar() {
   alert(response);
 }
 
+async function queryRental() {
+    // extract all the input values
+    const rentalNum = document.getElementById('rental-num').value;
+    // ensure they all have a value
+    if (!rentalNum)
+        return "You cannot have null values.";
+    const options = {
+        rental_record: {
+            'rental_number': rentalNum,
+        },
+    };
+    const response = await fetch('/get_rental_info?search=' + encodeURIComponent(JSON.stringify(options)), {
+    }).then((res) => {
+        return res.text()
+    });
+    document.querySelector('html').innerHTML = response;
+}
+
 async function removeCar() {
   const vin = document.getElementById('r-vin').value;
 
@@ -201,18 +254,20 @@ async function removeCar() {
 async function addCustomer() {
   const fname = document.getElementById('cust-fname').value
   const lname = document.getElementById('cust-lname').value
+  const license = document.getElementById('cust-lic').value
   const bday = document.getElementById('cust-bday').value
   const streetField = document.getElementById('cust-street').value
   const cityField = document.getElementById('cust-city').value
   const stateField = document.getElementById('cust-state').value
 
-  if (!fname || !lname || !bday || !streetField || !cityField || !stateField) {
+  if (!fname || !lname || !license || !bday || !streetField || !cityField || !stateField) {
     console.log('you cannot have null values')
   }
 
   const customerInfo = {
     fName: fname,
     lName: lname,
+    licenseD: license,
     bDay: bday,
     street: streetField,
     city: cityField,
