@@ -176,9 +176,6 @@ def create_rental():
         WHERE carReturned IS NULL AND customerID = (
             SELECT ID
             FROM Customer
-            WHERE Customer.firstName ILIKE %(f_name)s
-                AND Customer.lastName ILIKE %(l_name)s
-                AND Customer.birthDate = %(b_day)s
             WHERE Customer.licenseID ILIKE %(license_id)s AND
             Customer.firstName ILIKE %(first_name)s AND 
             Customer.lastName ILIKE %(last_name)s AND 
