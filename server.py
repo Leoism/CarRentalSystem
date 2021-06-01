@@ -254,6 +254,95 @@ def create_rental():
                             customer_name=customer['first_name'] + " " + customer['last_name']
                         ), 201
 
+@app.route('/get_rental_info')
+def query_rental():
+    rows = ''
+    column_names = None
+    values = request.args.get('search', default = '')
+    rental_record = json.loads(values)['rental_record']
+
+    rentalInfoQuery = """
+            SELECT Customer.firstname, Customer.lastname, RentalRecord.carRented, RentalRecord.carReturned,
+	        RentalRecord.expectedReturn, RentalRecord.rentalNumber, RentalRecord.totalCost, Car.carType, 
+	        Car.Make, Car.Model, Car.Year, Car.hourlyRate
+            FROM RentalRecord
+                JOIN Customer ON (Customer.id = RentalRecord.CustomerID)
+                JOIN Car ON (Car.id = RentalRecord.CarID)
+            WHERE RentalRecord.RentalNumber ILIKE %s;
+            """      
+    try:
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor()
+        cur.execute(rentalInfoQuery, (rental_record['rental_number'],))
+        rows = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    if conn is not None:
+        conn.close()
+    return render_template("rent.html", rows=rows, column_names=column_names)
+
+@app.route('/get_rental_cost', methods=['PUT'])
+def get_rental_cost():
+    printHelper = ""
+    values = request.json
+    rental_record = values['rental_record']
+    returnQuery = """
+        UPDATE RentalRecord
+        SET carReturned = CURRENT_TIMESTAMP
+        WHERE rentalNumber ILIKE %s AND carReturned IS NULL;
+    """
+    availabilityQuery = """
+        UPDATE Car
+        SET availability = 't'
+        WHERE Car.id = (SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber ILIKE %s AND carreturned IS NULL);
+    """
+    updateStatusQuery = """
+        UPDATE RentalRecord
+        SET totalCost = (SELECT (T1.initCost + T2.overtime)::numeric(8, 2) AS finalCost
+        FROM (SELECT CASE
+        WHEN Temp.overtime < 0 THEN COALESCE(Temp.overtime - Temp.overtime, 0)
+        WHEN Temp.overtime >= 0 THEN Temp.overtime
+        END AS overtime
+        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carReturned - RentalRecord.expectedReturn)/3600 * 75)::float AS overtime
+        FROM RentalRecord
+        WHERE RentalRecord.RentalNumber = %s) AS Temp
+        GROUP BY Temp.overtime) AS T2
+        JOIN (SELECT Tempy.initCost
+        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.carReturned)/3600 * Car.hourlyRate * -1)::float AS initCost
+        FROM RentalRecord
+        JOIN Car on (RentalRecord.carID = Car.ID)
+        WHERE RentalRecord.RentalNumber = %s) AS Tempy
+        GROUP BY Tempy.initCost) AS T1 ON TRUE)
+        WHERE RentalRecord.RentalNumber = %s
+        RETURNING totalCost;
+    """
+
+    conn = None
+    try:
+        conn = psycopg2.connect(database_url)
+        
+        cur = conn.cursor()
+        cur.execute(availabilityQuery, (rental_record['rental_number'],))
+        cur.execute(returnQuery, (rental_record['rental_number'],))
+        cur.execute(updateStatusQuery, (rental_record['rental_number'],rental_record['rental_number'],rental_record['rental_number'],))
+        checkExec = cur.fetchall()
+        if len(checkExec) != 0:
+            conn.commit()
+        else:
+            conn.close()
+            return "user inputted rental number doesn't exist in the db", 500
+        printHelper = "Success, total cost is: " + str(checkExec[0][0])
+        conn.close()
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "Error", 500
+    return str(printHelper), 200
+
 @app.route('/add_car', methods=['POST'])
 def add_car():
 

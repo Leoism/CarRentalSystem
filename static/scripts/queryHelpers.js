@@ -337,3 +337,58 @@ async function queryCars() {
   });
   document.querySelector('html').innerHTML = response;
 }
+
+async function queryRental() {
+  // extract all the input values
+  const rentalNum = document.getElementById('rental-num').value;
+  // ensure they all have a value
+  if (!rentalNum) {
+    alert("You cannot have null values.");
+    return "You cannot have null values.";
+  }
+  const options = {
+    rental_record: {
+      rental_number: rentalNum,
+    },
+  };
+
+  const response = await fetch('/get_rental_info?search=' + encodeURIComponent(JSON.stringify(options)), {
+  }).then((res) => {
+    return res.text()
+  });
+  document.querySelector('html').innerHTML = response;
+}
+
+/** For the FIRST time this button is clicked, a customer is "returning" a car that was rented. 
+ * This triggers the query to set NOW as the timestamp in which the car is returned.
+ * It also returns the total cost of the rental to the user. 
+ * For SUBSEQUENT calls, it only returns the total cost of the rental to the user. 
+ **/
+async function getRentalCost() {
+  // extract all the input values
+  const rentalNum = document.getElementById('rental-num1').value;
+  // ensure they all have a value
+  if (!rentalNum) {
+    alert("You cannot have null values.");
+    return "You cannot have null values.";
+  }
+  const options = {
+    rental_record: {
+      'rental_number': rentalNum,
+    },
+  };
+
+  const response = await fetch('/get_rental_cost', {
+    method: 'PUT',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(options)
+  }).then((res) => {
+    return res.text();
+  });
+
+  alert(response);
+  return response;
+}
