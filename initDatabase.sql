@@ -17,6 +17,7 @@ CREATE TABLE Customer (
   firstName VARCHAR(64)   NOT NULL,
   lastName  VARCHAR(64)   NOT NULL,
   licenseID VARCHAR(32)   NOT NULL UNIQUE,
+  birthdate DATE      NOT NULL,
   street    VARCHAR(128)  NOT NULL,
   city      VARCHAR(128)  NOT NULL,
   state     VARCHAR(2)    NOT NULL,

@@ -178,14 +178,16 @@ def create_rental():
             FROM Customer
             WHERE Customer.licenseID = %(license_id)s AND
             Customer.firstName = %(first_name)s AND 
-            Customer.lastName = %(last_name)s
+            Customer.lastName = %(last_name)s AND 
+            Customer.birthdate = %(birthdate)s
         );
     """
     try:
         cur.execute(customer_eligibility, {
             'license_id': customer['license_id'],
             'first_name': customer['first_name'],
-            'last_name': customer['last_name']
+            'last_name': customer['last_name'],
+            'birthdate': customer['birthdate']
         })
         outgoing_rental = cur.fetchall()
         if len(outgoing_rental) > 0:
@@ -206,7 +208,8 @@ def create_rental():
         (SELECT Customer.ID FROM Customer
         WHERE Customer.licenseID = %(license_id)s AND
             Customer.firstName = %(first_name)s AND 
-            Customer.lastName = %(last_name)s), 
+            Customer.lastName = %(last_name)s AND
+            Customer.birthdate = %(birthdate)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
     rental_num = _generate_number(16)
@@ -216,7 +219,8 @@ def create_rental():
             'todays_date': str(today),
             'license_id': customer['license_id'],
             'first_name': customer['first_name'],
-            'last_name': customer['last_name'],       # rental_length must be in days
+            'last_name': customer['last_name'],   
+            'birthdate': customer['birthdate'],    # rental_length must be in days
             'expected_ret': str(today + timedelta(days=values['rental_length'])),
             'rental_num': rental_num
         })
@@ -477,15 +481,15 @@ def _generate_number(length):
 def add_customer():
     values = request.json
     addCustomerQuery = """
-        INSERT INTO Customer (firstname, lastname, licenseID, street, city, state)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO Customer (firstname, lastname, licenseID, birthdate, street, city, state)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
 
     conn = None
     try:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
-        cur.execute(addCustomerQuery, (values['first_name'], values['last_name'], values['license_id'], values['street'], values['city'], values['state'],))
+        cur.execute(addCustomerQuery, (values['first_name'], values['last_name'], values['license_id'], values['birthdate'], values['street'], values['city'], values['state'],))
         conn.commit()
         conn.close()
     except (Exception, psycopg2.DatabaseError) as error:
