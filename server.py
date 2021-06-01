@@ -255,7 +255,7 @@ def create_rental():
 def add_car():
 
     query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'true');"""
     values = request.json
 
     car = values['car']
@@ -268,14 +268,13 @@ def add_car():
     numaccidents = car['numaccidents']
     seats = car['seats']
     hourlyrate = car['hourlyrate']
-    availability = car['availability']
 
     conn = None
 
     try: 
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
-        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate, availability))
+        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate))
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:

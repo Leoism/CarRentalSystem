@@ -119,11 +119,10 @@ async function addCar() {
   const numaccidents = document.getElementById('numaccidents').value;
   const seats = document.getElementById('seats').value;
   const hourlyrate = document.getElementById('hourlyrate').value;
-  const availability = document.getElementById('availability').checked;
 
   const options = {
     car: {
-      vin, cartype, make, model, year, numaccidents, seats, hourlyrate, availability
+      vin, cartype, make, model, year, numaccidents, seats, hourlyrate
     }
   };
 
