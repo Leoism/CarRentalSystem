@@ -16,7 +16,7 @@ CREATE TABLE Customer (
   ID        SERIAL        PRIMARY KEY,
   firstName VARCHAR(64)   NOT NULL,
   lastName  VARCHAR(64)   NOT NULL,
-  birthdate DATE          NOT NULL,
+  licenseID VARCHAR(32)   NOT NULL UNIQUE,
   street    VARCHAR(128)  NOT NULL,
   city      VARCHAR(128)  NOT NULL,
   state     VARCHAR(2)    NOT NULL,
