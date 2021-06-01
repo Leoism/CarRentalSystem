@@ -1,8 +1,8 @@
 /**
  * Creates a custom NavigationBar component. Can be called as a tag using:
- * <nav-bar></nav-bar>
+ * <agent-nav-bar></agent-nav-bar>
  */
-class NavigationBar extends HTMLElement {
+class AgentNavigationBar extends HTMLElement {
   /** Sets the HTML for the NavigationBar element. */
   connectedCallback() {
     this.innerHTML = `
@@ -15,4 +15,4 @@ class NavigationBar extends HTMLElement {
   }
 }
 
-customElements.define('nav-bar', NavigationBar);
+customElements.define('agent-nav-bar', AgentNavigationBar);
