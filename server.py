@@ -179,13 +179,18 @@ def create_rental():
             WHERE Customer.firstName ILIKE %(f_name)s
                 AND Customer.lastName ILIKE %(l_name)s
                 AND Customer.birthDate = %(b_day)s
+            WHERE Customer.licenseID ILIKE %(license_id)s AND
+            Customer.firstName ILIKE %(first_name)s AND 
+            Customer.lastName ILIKE %(last_name)s AND 
+            Customer.birthdate = %(birthdate)s
         );
     """
     try:
         cur.execute(customer_eligibility, {
-            'f_name': customer['first_name'],
-            'l_name': customer['last_name'],
-            'b_day': customer['birthdate']
+            'license_id': customer['license_id'],
+            'first_name': customer['first_name'],
+            'last_name': customer['last_name'],
+            'birthdate': customer['birthdate']
         })
         outgoing_rental = cur.fetchall()
         if len(outgoing_rental) > 0:
@@ -204,20 +209,21 @@ def create_rental():
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
         VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s),
         (SELECT Customer.ID FROM Customer
-        WHERE Customer.firstName ILIKE %(f_name)s
-            AND Customer.lastName ILIKE %(l_name)s
-            AND Customer.birthDate = %(b_day)s), 
+        WHERE Customer.licenseID ILIKE %(license_id)s AND
+            Customer.firstName ILIKE %(first_name)s AND 
+            Customer.lastName ILIKE %(last_name)s AND
+            Customer.birthdate = %(birthdate)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
     rental_num = _generate_number(16)
     try:
         cur.execute(rent_query, {
             'car_vin': car['vin'],
-            'f_name': customer['first_name'], 
-            'l_name': customer['last_name'],
-            'b_day': customer['birthdate'],
             'todays_date': str(today),
-            # rental_length must be in days
+            'license_id': customer['license_id'],
+            'first_name': customer['first_name'],
+            'last_name': customer['last_name'],   
+            'birthdate': customer['birthdate'],    # rental_length must be in days
             'expected_ret': str(today + timedelta(days=values['rental_length'])),
             'rental_num': rental_num
         })
@@ -477,15 +483,15 @@ def _generate_number(length):
 def add_customer():
     values = request.json
     addCustomerQuery = """
-        INSERT INTO Customer (firstname, lastname, birthdate, street, city, state)
-        VALUES (%s, %s, %s, %s, %s, %s)
+        INSERT INTO Customer (firstname, lastname, licenseID, birthdate, street, city, state)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
 
     conn = None
     try:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
-        cur.execute(addCustomerQuery, (values['fName'], values['lName'], values['bDay'], values['street'], values['city'], values['state'],))
+        cur.execute(addCustomerQuery, (values['first_name'], values['last_name'], values['license_id'], values['birthdate'], values['street'], values['city'], values['state'],))
         conn.commit()
         conn.close()
     except (Exception, psycopg2.DatabaseError) as error:

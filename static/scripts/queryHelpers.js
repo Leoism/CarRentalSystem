@@ -8,11 +8,12 @@ async function rentCar() {
   // extract all the input values
   const firstName = document.getElementById('cust-fname').value;
   const lastName = document.getElementById('cust-lname').value;
+  const license = document.getElementById('cust-license').value;
   const birthdate = document.getElementById('cust-bday').value;
   const carVin = document.getElementById('car-vin').value;
   const rentalLength = document.getElementById('rental-length').value;
   // ensure they all have a value
-  if (!firstName || !lastName || !birthdate || !carVin || !rentalLength) {
+  if (!firstName || !lastName || !license || !birthdate || !carVin || !rentalLength) {
     alert('You cannot have empty fields.')
     return 'You cannot have null values.';
   }
@@ -36,8 +37,9 @@ async function rentCar() {
 
   const options = {
     customer: {
-      'first_name': firstName,
-      'last_name': lastName,
+      first_name: firstName,
+      last_name: lastName,
+      license_id: license,
       birthdate,
     },
     car: {
@@ -200,19 +202,21 @@ async function removeCar() {
 async function addCustomer() {
   const fname = document.getElementById('cust-fname').value
   const lname = document.getElementById('cust-lname').value
-  const bday = document.getElementById('cust-bday').value
+  const license = document.getElementById('cust-license').value
   const streetField = document.getElementById('cust-street').value
   const cityField = document.getElementById('cust-city').value
   const stateField = document.getElementById('cust-state').value
+  const birthdate = document.getElementById('cust-bday').value;
 
-  if (!fname || !lname || !bday || !streetField || !cityField || !stateField) {
+  if (!fname || !lname || !license || !streetField || !cityField || !stateField) {
     console.log('you cannot have null values')
   }
 
   const customerInfo = {
-    fName: fname,
-    lName: lname,
-    bDay: bday,
+    first_name: fname,
+    last_name: lname,
+    license_id: license,
+    birthdate,
     street: streetField,
     city: cityField,
     state: stateField
