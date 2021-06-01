@@ -97,7 +97,7 @@ def add_rating():
         Creates rating associated with the rental and car being reviewed.
     """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
-                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber = %s), %s , %s);"""
+                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber ILIKE %s), %s , %s);"""
     values = request.json
     # extract customer
     rental_record = values['rental_record']
@@ -151,7 +151,7 @@ def create_rental():
     check_avail_query = """
         SELECT availability
         FROM Car
-        WHERE Car.availability = 'true' AND Car.VIN = %s;
+        WHERE Car.availability = 'true' AND Car.VIN ILIKE %s;
     """
     try:
         conn = psycopg2.connect(database_url)
@@ -176,8 +176,8 @@ def create_rental():
         WHERE carReturned IS NULL AND customerID = (
             SELECT ID
             FROM Customer
-            WHERE Customer.firstName = %(f_name)s
-                AND Customer.lastName = %(l_name)s
+            WHERE Customer.firstName ILIKE %(f_name)s
+                AND Customer.lastName ILIKE %(l_name)s
                 AND Customer.birthDate = %(b_day)s
         );
     """
@@ -204,8 +204,8 @@ def create_rental():
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
         VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s),
         (SELECT Customer.ID FROM Customer
-        WHERE Customer.firstName = %(f_name)s
-            AND Customer.lastName = %(l_name)s
+        WHERE Customer.firstName ILIKE %(f_name)s
+            AND Customer.lastName ILIKE %(l_name)s
             AND Customer.birthDate = %(b_day)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
@@ -235,7 +235,7 @@ def create_rental():
     update_avail = """
         UPDATE Car
         SET availability = 'false'
-        WHERE Car.VIN = %s;
+        WHERE Car.VIN ILIKE %s;
         """
     try:
         # update the availability of the car to be unavialable
@@ -289,7 +289,7 @@ def add_car():
 @app.route('/remove_car', methods=['DELETE'])
 def remove_car():
     query = """DELETE FROM Car
-               WHERE vin = %s; """
+               WHERE vin ILIKE %s; """
 
     values = request.json
     
@@ -331,7 +331,7 @@ def update_accidents():
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN = %(car_vin)s;
+        WHERE VIN ILIKE %(car_vin)s;
         """
     try: 
         conn = psycopg2.connect(database_url)
@@ -377,13 +377,13 @@ def query_cars():
     else:
         show_car_query += 'Car.NumAccidents >= 0 '
     if filter['vin'] != '': 
-        show_car_query += 'AND Car.VIN =  %(car_vin)s '
+        show_car_query += 'AND Car.VIN ILIKE  %(car_vin)s '
     if filter['name'] != '': 
-        show_car_query += 'AND CarType.Name = %(car_name)s '
+        show_car_query += 'AND CarType.Name ILIKE %(car_name)s '
     if filter['make'] != '': 
-        show_car_query += 'AND Car.Make = %(car_make)s '
+        show_car_query += 'AND Car.Make ILIKE %(car_make)s '
     if filter['model'] != '': 
-        show_car_query += 'AND Car.Model = %(car_model)s '
+        show_car_query += 'AND Car.Model ILIKE %(car_model)s '
     if filter['year'] != '': 
         show_car_query += 'AND Car.Year = %(car_year)s '
     if filter['seats'] != '': 
@@ -505,12 +505,12 @@ def update_availability_status():
     updateStatusQuery = """
         UPDATE Car
         SET availability = %s
-        WHERE vin = %s;
+        WHERE vin ILIKE %s;
     """
     check_car_exists = """
         SELECT vin 
         FROM Car 
-        WHERE vin = %s;
+        WHERE vin ILIKE %s;
     """
     conn = None
     try:
