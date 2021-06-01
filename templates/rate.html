@@ -1,15 +1,15 @@
 <script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
-<script type="text/javascript" src="/static/scripts/navigation_template.js"></script>
+<script type="text/javascript" src="/static/scripts/customer_navigation_template.js"></script>
+<script type="text/javascript" src="/static/scripts/eventListeners.js"></script>
 <link rel="stylesheet" href="/static/styles/navbar.css">
-<nav-bar></nav-bar>
+<customer-nav-bar></customer-nav-bar>
 <div>
-    <h1>Rate your Rental Experience</h1>
-    <label for="rental-number">Rental Number</label>
-    <input id="rental-number" type="text" minlength="16" maxlength="16">
-    <label for="car-vin">Car VIN</label>
-    <input id="car-vin" type="text" minlength="11" maxlength="17">
-    <label for="rating">Rating</label>
-    <input type="number" id="rating" min="0" max="5">
-    <hr>
-    <button onclick="rateRental()">Rate</button>
+  <h1>Rate your Rental Experience</h1>
+  <label for="rental-number">Rental Number</label>
+  <input id="rental-number" type="text" minlength="16" maxlength="16">
+  <label for="rating">Rating</label>
+  <input type="range" min="0" max="5" value="5" id="rating">
+  <span id="rating-val"></span>
+  <hr>
+  <button onclick="rateRental()">Rate</button>
 </div>

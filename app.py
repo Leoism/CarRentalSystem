@@ -8,6 +8,7 @@ from flask_heroku import Heroku
 from datetime import datetime, timedelta # add as req
 import time # add as req
 import random # add as req
+# from dotenv import load_dotenv killed this line
 
 # from config import config
 
@@ -86,22 +87,29 @@ def add_rating():
         Creates rating associated with the rental and car being reviewed.
     """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
-                VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %s), %s , %s);"""
+                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber = %s), %s , %s);"""
     values = request.json
     # extract customer
     rental_record = values['rental_record']
     # and car objects from the json
-    car = values['car']
     conn = None
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
-        cur.execute(query, (car['vin'], rental_record['rental_number'], values['rating'],))
+        cur.execute(query, (rental_record['rental_number'], rental_record['rental_number'], values['rating'],))
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
-        print(error)
         conn.close()
+        if not hasattr(error, 'pgcode'):
+            return MISC_ERROR_MSG
+        if error.pgcode == '23502':
+            return "The Rental Number does not seem to exist. Try Again."
+        if error.pgcode == '23505':
+            return "There is already a rating for this rental. You cannot rate more than once."
+        if error.pgcode == '22P02':
+            return "It seems some of your values are not valid. Please try again."
+        print(error.pgcode)
         return "Error", 500
     if conn is not None:
         conn.close()
@@ -248,13 +256,14 @@ def get_rental_cost():
         SET totalCost = (SELECT (T1.initCost + T2.overtime)::numeric(8, 2) AS finalCost
         FROM (SELECT CASE
         WHEN Temp.overtime < 0 THEN COALESCE(Temp.overtime - Temp.overtime, 0)
+        WHEN Temp.overtime >= 0 THEN Temp.overtime
         END AS overtime
         FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carReturned - RentalRecord.expectedReturn)/3600 * 75)::float AS overtime
         FROM RentalRecord
         WHERE RentalRecord.RentalNumber = %s) AS Temp
         GROUP BY Temp.overtime) AS T2
         JOIN (SELECT Tempy.initCost
-        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.carReturned)/3600 * Car.hourlyRate * -1)::float AS initCost
+        FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.expectedReturn)/3600 * Car.hourlyRate * -1)::float AS initCost
         FROM RentalRecord
         JOIN Car on (RentalRecord.carID = Car.ID)
         WHERE RentalRecord.RentalNumber = %s) AS Tempy
@@ -285,17 +294,16 @@ def get_rental_cost():
         return "Error", 500
     return str(printHelper), 201
 
-# EDIT THIS AAAAAAAA
 @app.route('/get_rental_info')
 def query_rental():
     car = None
     rows = ''
     column_names = None
     values = request.args.get('search', default = '')
-    print(values) # aaaaaaa
+    #print(values) # aaaaaaa
     #rental_record = values['rental_number']
     rental_record = json.loads(values)['rental_record']
-    print(rental_record) # aaaaaa
+    #print(rental_record) # aaaaaa
     rentalInfoQuery = """
             SELECT Customer.firstname, Customer.lastname, RentalRecord.carRented, RentalRecord.carReturned,
 	        RentalRecord.expectedReturn, RentalRecord.rentalNumber, RentalRecord.totalCost, Car.carType, 
@@ -308,7 +316,7 @@ def query_rental():
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
-        cur.execute(InfoQuery, (rental_record['rental_number'],)) # (rental_record['rental_number'],))
+        cur.execute(rentalInfoQuery, (rental_record['rental_number'],)) # (rental_record['rental_number'],))
         #conn.commit()
         rows = cur.fetchall()
         column_names = [desc[0] for desc in cur.description]
@@ -320,7 +328,6 @@ def query_rental():
     if conn is not None:
         conn.close()
     return render_template("rent.html", rows=rows, column_names=column_names)
-# END AAAAAAAA
 
 @app.route('/add_car', methods=['POST'])
 def add_car():
@@ -373,6 +380,9 @@ def remove_car():
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
         cur.execute(query, (vin,))
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -388,27 +398,36 @@ def return_car():
     return render_template('car.html')
 
 
-@app.route('/update_accidents', methods=['POST'])
+@app.route('/update_accidents', methods=['PUT'])
 def update_accidents():
     """
         Update amount of accidents on a car. Increments numAccidents by one, as it is impossible to ethically undo an accident.
     """
- # Update the accidents of the car
+    values = request.json
+     # Update the accidents of the car
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN = %s;
+        WHERE VIN = %(car_vin)s;
         """
-    try:
-        # update the car accidents
-        cur.execute(update_acid, (car['vin'],))
+    try: 
+        conn = psycopg2.connect(DATABASE_DEFAULT)
+        cur = conn.cursor()
+        cur.execute(update_acid, {
+            'car_vin': values['vin']
+        })
+        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
+        if retval == 0:
+            return "That Car Does Not Exist", 500
         conn.commit()
-        conn.close()
-    except(Exception, psycopg2.DatabaseError) as error:
+        cur.close()
+    except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
         return "Error", 500
-    return "SUCCESS", 201
+    if conn is not None:
+        conn.close()
+    return "Successfully Added an Incident to a Car", 200
 
 
 @app.route('/queryCars')
@@ -594,6 +613,14 @@ def update_availability_status():
 @app.route('/updateAvailability', methods=["GET"])
 def renderAvailabiliity():
     return render_template("updateAvailabilityStatus.html")
+
+@app.route('/agent', methods=["GET"])
+def agent_template():
+    return render_template("AgentPage.html")
+
+@app.route('/login', methods=["GET"])
+def login_template():
+    return render_template("LoginPage.html")
 
 if __name__ == '__main__':
     app.run()
