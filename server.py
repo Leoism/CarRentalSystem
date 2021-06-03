@@ -372,7 +372,7 @@ def add_car():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "Car could not be added because that VIN number is already used", 500
     if conn is not None:
         conn.close()
     return "Successfuly Added a Car", 201
@@ -401,7 +401,7 @@ def remove_car():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "That car is not in the database", 500
     if conn is not None:
         conn.close()
     return "Successfuly Removed a Car", 200
