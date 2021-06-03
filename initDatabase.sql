@@ -41,9 +41,26 @@ CREATE TABLE Car (
   seats         INT           NOT NULL,
   hourlyRate    numeric(5,2)  NOT NULL,
   availability  BOOLEAN       NOT NULL,
+  isDeleted     BOOLEAN       NOT NULL  DEFAULT 'False',
 
   FOREIGN KEY(carType) REFERENCES CarType(type)
 );
+
+CREATE OR REPLACE FUNCTION SoftDeleteCars()
+RETURNS TRIGGER AS '
+BEGIN  
+  UPDATE Car
+  SET isDeleted = true
+  WHERE ID = Old.ID;
+  RETURN NULL;
+END; ' language plpgsql;
+
+-- Prevent deleting the Car table
+CREATE TRIGGER soft_delete_trig
+BEFORE DELETE 
+ON Car
+FOR EACH ROW
+EXECUTE PROCEDURE SoftDeleteCars();
 
 CREATE TABLE RentalRecord (
   carID           INT         NOT NULL,
