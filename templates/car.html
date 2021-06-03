@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -44,11 +44,10 @@
         <label for="hourlyrate">Hourly Rate</label>
         <input id="hourlyrate" type="number" min="0" />
         <br>
-        <label for="availability">Availability</label>
-        <input id="availability" type="checkbox" />
-        <br>
         <button onclick="addCar()">Add Car</button>
     </div>
+    <p>All fields must be filled.</p>
+    <p>VIN: must be of length between 11 and 17 characters.</p>
 
     <div>
         <h1 class="header">Remove a Car by Vin</h1>
@@ -56,6 +55,7 @@
         <input id="r-vin" type="text" minlength="11" maxlength="17" />
         <button onclick="removeCar()">Remove Car</button>
     </div>
+    <p>VIN: case insensitive</p>
 
     <div>
         <h1 class="header">Add an Incident by Vin</h1>
@@ -63,6 +63,7 @@
         <input id="car-vin" type="text" minlength="11" maxlength="17" />
         <button onclick="updateAccidents()">Add Incident</button>
     </div>
+    <p>VIN: case insensitive</p>
 </body>
 <script type="text/javascript" src="/static/scripts/queryHelpers.js"></script>
 

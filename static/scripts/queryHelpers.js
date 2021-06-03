@@ -154,11 +154,10 @@ async function addCar() {
   const numaccidents = document.getElementById('numaccidents').value;
   const seats = document.getElementById('seats').value;
   const hourlyrate = document.getElementById('hourlyrate').value;
-  const availability = document.getElementById('availability').checked;
 
   const options = {
     car: {
-      vin, cartype, make, model, year, numaccidents, seats, hourlyrate, availability
+      vin, cartype, make, model, year, numaccidents, seats, hourlyrate
     }
   };
 
@@ -354,38 +353,72 @@ async function updateAccidents() {
 
 
 }
-
 async function queryCars() {
-  let vin = document.getElementById('car_vin').value;
-  let name = document.getElementById('car_name').value;
-  let make = document.getElementById('car_make').value;
-  let model = document.getElementById('car_model').value;
-  let year = document.getElementById('car_year').value;
-  let acc = document.getElementById('car_acc').value;
-  let seats = document.getElementById('car_seats').value;
-  let price = document.getElementById('car_price').value;
-  let avail = document.getElementById('car_avail').value;
-  let rate = document.getElementById('car_rate').value;
+    let vin = document.getElementById('car_vin').value;
+    let name = document.getElementById('car_name').value;
+    let make = document.getElementById('car_make').value;
+    let model = document.getElementById('car_model').value;
+    let year = document.getElementById('car_year').value;
+    let acc = document.getElementById('car_acc').value;
+    let seats = document.getElementById('car_seats').value;
+    let price = document.getElementById('car_price').value;
+    let avail = document.getElementById('car_avail').value;
+    let rate = document.getElementById('car_rate').value;
 
-  if (!vin) vin = ''
-  if (!name) name = ''
-  if (!make) make = ''
-  if (!model) model = ''
-  if (!year) year = ''
-  if (!acc) acc = ''
-  if (!seats) seats = ''
-  if (!price) price = ''
-  if (!avail) avail = ''
-  if (!rate) rate = ''
-  const options = {
-    filter: {
-      vin, name, make, model, year, acc, seats, price, avail, rate
-    }
-  };
+    if (!vin) vin = ''
+    if (!name) name = ''
+    if (!make) make = ''
+    if (!model) model = ''
+    if (!year) year = ''
+    if (!acc) acc = ''
+    if (!seats) seats = ''
+    if (!price) price = ''
+    if (!avail) avail = ''
+    if (!rate) rate = ''
+    const options = {
+        filter: {
+            vin, name, make, model, year, acc, seats, price, avail, rate
+        }
+    };
 
-  const response = await fetch('/queryCars?search=' + encodeURIComponent(JSON.stringify(options)), {
-  }).then((res) => {
-    return res.text()
-  });
-  document.querySelector('html').innerHTML = response;
+    const response = await fetch('/queryCars?search=' + encodeURIComponent(JSON.stringify(options)), {
+    }).then((res) => {
+        return res.text()
+    });
+    document.querySelector('html').innerHTML = response;
 }
+
+//async function queryCars() {
+//    let vin = document.getElementById('car_vin').value;
+//    let name = document.getElementById('car_name').value;
+//    let make = document.getElementById('car_make').value;
+//    let model = document.getElementById('car_model').value;
+//    let year = document.getElementById('car_year').value;
+//    let acc = document.getElementById('car_acc').value;
+//    let seats = document.getElementById('car_seats').value;
+//    let price = document.getElementById('car_price').value;
+//    let avail = document.getElementById('car_avail').value;
+//    let rate = document.getElementById('car_rate').value;
+//
+//    if (!vin) vin = ''
+//    if (!name) name = ''
+//    if (!make) make = ''
+//    if (!model) model = ''
+//    if (!year) year = ''
+//    if (!acc) acc = ''
+//    if (!seats) seats = ''
+//    if (!price) price = ''
+//    if (!avail) avail = ''
+//    if (!rate) rate = ''
+//    const options = {
+//        filter: {
+//            vin, name, make, model, year, acc, seats, price, avail, rate
+//        }
+//    };
+//
+//    const response = await fetch('/queryCars?search=' + encodeURIComponent(JSON.stringify(options)), {
+//    }).then((res) => {
+//        return res.text()
+//    });
+//    document.querySelector('html').innerHTML = response;
+//}

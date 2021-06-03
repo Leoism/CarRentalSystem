@@ -189,20 +189,20 @@ INSERT INTO public.customer VALUES (4, 'Database', 'God', 'A1234567890', '2000-0
 -- Data for Name: ratingrecord; Type: TABLE DATA; Schema: public
 --
 
-INSERT INTO public.ratingrecord VALUES (1, 'UU467HJ8G2D', 5);
-INSERT INTO public.ratingrecord VALUES (4, 'ABCDEFGHI123', 4);
-INSERT INTO public.ratingrecord VALUES (5, '1234QUERTY123', 5);
-INSERT INTO public.ratingrecord VALUES (4, '123RENT456789', 3);
+INSERT INTO public.ratingrecord VALUES (1, 'UU467HJ8G2DAAAAA', 5);
+INSERT INTO public.ratingrecord VALUES (4, 'ABCDEFGHI123AAAA', 4);
+INSERT INTO public.ratingrecord VALUES (5, '1234QUERTY123AAA', 5);
+INSERT INTO public.ratingrecord VALUES (4, '123RENT456789AAA', 3);
 
 
 --
 -- Data for Name: rentalrecord; Type: TABLE DATA; Schema: public
 --
 
-INSERT INTO public.rentalrecord VALUES (1, 1, '2021-05-25 12:31:54.267327', '2021-06-10 12:00:00', '2021-06-12 12:00:00', 'UU467HJ8G2D', 2239.00);
-INSERT INTO public.rentalrecord VALUES (4, 2, '2021-05-20 18:00:00', '2021-05-30 15:25:20', '2021-05-29 12:00:00', 'ABCDEFGHI123', 8052.17);
-INSERT INTO public.rentalrecord VALUES (5, 4, '2021-05-18 18:00:00', '2021-05-30 15:25:20', '2021-05-31 12:00:00', '1234QUERTY123', 12613.32);
-INSERT INTO public.rentalrecord VALUES (4, 3, '2021-05-28 12:00:00', '2021-05-30 15:25:20', '2021-05-31 12:00:00', '123RENT456789', 2055.60);
+INSERT INTO public.rentalrecord VALUES (1, 1, '2021-05-25 12:31:54.267327', '2021-06-10 12:00:00', '2021-06-12 12:00:00', 'UU467HJ8G2DAAAAA', 2239.00);
+INSERT INTO public.rentalrecord VALUES (4, 2, '2021-05-20 18:00:00', '2021-05-30 15:25:20', '2021-05-29 12:00:00', 'ABCDEFGHI123AAAA', 8052.17);
+INSERT INTO public.rentalrecord VALUES (5, 4, '2021-05-18 18:00:00', '2021-05-30 15:25:20', '2021-05-31 12:00:00', '1234QUERTY123AAA', 12613.32);
+INSERT INTO public.rentalrecord VALUES (4, 3, '2021-05-28 12:00:00', '2021-05-30 15:25:20', '2021-05-31 12:00:00', '123RENT456789AAA', 2055.60);
 
 
 --
@@ -265,14 +265,14 @@ INSERT INTO public.states VALUES ('WY', 'Wyoming');
 -- Name: car_id_seq; Type: SEQUENCE SET; Schema: public
 --
 
-SELECT pg_catalog.setval('public.car_id_seq', 3, true);
+SELECT pg_catalog.setval('public.car_id_seq', 6, true);
 
 
 --
 -- Name: customer_id_seq; Type: SEQUENCE SET; Schema: public
 --
 
-SELECT pg_catalog.setval('public.customer_id_seq', 1, true);
+SELECT pg_catalog.setval('public.customer_id_seq', 4, true);
 
 
 --

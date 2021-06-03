@@ -5,12 +5,17 @@
 class CustomerNavigationBar extends HTMLElement {
   /** Sets the HTML for the NavigationBar element. */
   connectedCallback() {
-    this.innerHTML = `
+      this.innerHTML = `
+      <nav>
+      <div class="logo">
+        <p>Database 2: The SQL</p>
+      </div>
       <ul id="nav-container">
         <li class="link-container"><a class="link" href="/">Home</a></li>
         <li class="link-container"><a class="link" href="/rate">Rate Rental</a></li>
         <li class="link-container"><a class="link" href="/login">Agent Portal</a></li>
-      </ul>`.trim();
+      </ul>
+      </nav>`.trim();
   }
 }
 

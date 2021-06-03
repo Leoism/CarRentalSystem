@@ -5,7 +5,10 @@
 class AgentNavigationBar extends HTMLElement {
   /** Sets the HTML for the NavigationBar element. */
   connectedCallback() {
-    this.innerHTML = `
+      this.innerHTML = `
+      <div class="logo">
+        <p>Database 2: The SQL</p>
+      </div>
       <ul id="nav-container">
         <li class="link-container"><a class="link" href="/">Home</a></li>
         <li class="link-container"><a class="link" href="/rent">Renting Tools</a></li>

@@ -1,0 +1,18 @@
+body {
+    font-family: 'Ubuntu',sans-serif;
+    background-color: #D3D0CB;
+}
+.container {
+    width: 90%;
+    margin: auto;
+    padding-top: 2rem;
+}
+.indexinput {
+    width: 100%;
+}
+tbody tr:hover {
+    background: #6E8898;
+}
+th { 
+    font-size: 1.2rem;
+}

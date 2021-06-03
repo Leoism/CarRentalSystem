@@ -17,11 +17,17 @@
     <h3>Enter car info</h3>
     <label for="car-vin">Car VIN</label>
     <input id="car-vin" type="text" minlength="11" maxlength="17">
-    <label for="rental-length">Renting Days Amounts</label>
+    <label for="rental-length">Rental Length (days)</label>
     <input id="rental-length" type="number" min="1">
     <hr>
     <button onclick="rentCar()">Rent</button>
 </div>
+<body>
+    <p>All fields (both customer info and car info) must be filled.</p>
+    <p>Driver's license ID is case insensitive.</p>
+    <p>Car VIN is case insensitive.</p>
+    <p>Rental length is in days, bound between 1 and 30</p>
+</body>
 
 <div>
     <h1>Get total rental cost</h1>
@@ -30,6 +36,7 @@
     <hr />
     <button onclick="getRentalCost()">Get cost</button>
 </div>
+<body><p>Rental number is case insensitive.</p></body>
 
 
 <style>
@@ -67,3 +74,6 @@
     <button onclick="queryRental()" id="rental-q-button">Get Rental Info</button>
     <br />
 </div>
+<body>
+    <p>Rental number is case insensitive.</p>
+</body>

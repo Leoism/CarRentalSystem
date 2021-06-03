@@ -87,7 +87,7 @@ def add_rating():
         Creates rating associated with the rental and car being reviewed.
     """
     query = """ INSERT INTO RatingRecord (CarID, rentalNumber, rating)
-                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber = %s), %s , %s);"""
+                VALUES ((SELECT RentalRecord.carID FROM RentalRecord WHERE rentalNumber ILIKE %s), %s , %s);"""
     values = request.json
     # extract customer
     rental_record = values['rental_record']
@@ -141,7 +141,7 @@ def create_rental():
     check_avail_query = """
         SELECT availability
         FROM Car
-        WHERE Car.availability = 'true' AND Car.VIN = %s;
+        WHERE Car.availability = 'true' AND Car.VIN ILIKE %s;
     """
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
@@ -166,8 +166,8 @@ def create_rental():
         WHERE carReturned IS NULL AND customerID = (
             SELECT ID
             FROM Customer
-            WHERE Customer.firstName = %(f_name)s
-                AND Customer.lastName = %(l_name)s
+            WHERE Customer.firstName ILIKE %(f_name)s
+                AND Customer.lastName ILIKE %(l_name)s
                 AND Customer.birthDate = %(b_day)s
         );
     """
@@ -186,17 +186,17 @@ def create_rental():
         if not hasattr(error, 'pgcode'):
             return MISC_ERROR_MSG, 500
         if error.pgcode == "23502":
-            return "The customer has not yet been registered into the database.", 500
+            return "No customer with the entered information exists in the database.", 500
         print(error)
         return "Error", 500
     # Second, we must create a rental record and a rental number
     rent_query = """
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
-        VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s),
+        VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN ILIKE %(car_vin)s),
         (SELECT Customer.ID FROM Customer
-        WHERE Customer.firstName = %(f_name)s
-            AND Customer.lastName = %(l_name)s
-            AND Customer.licenseid = %(d_license)s
+        WHERE Customer.firstName ILIKE %(f_name)s
+            AND Customer.lastName ILIKE %(l_name)s
+            AND Customer.licenseid ILIKE %(d_license)s
             AND Customer.birthDate = %(b_day)s), 
         %(todays_date)s, %(expected_ret)s, %(rental_num)s);
         """
@@ -219,7 +219,7 @@ def create_rental():
         if not hasattr(error, 'pgcode'):
             return MISC_ERROR_MSG, 500
         if error.pgcode == "23502":
-            return "The customer has not yet been registered into the database.", 500
+            return "No customer with the entered information exists in the database.", 500
         print(error)
         return "Error", 500
 
@@ -227,7 +227,7 @@ def create_rental():
     update_avail = """
         UPDATE Car
         SET availability = 'false'
-        WHERE Car.VIN = %s;
+        WHERE Car.VIN ILIKE %s;
         """
     try:
         # update the availability of the car to be unavialable
@@ -251,12 +251,12 @@ def get_rental_cost():
     returnQuery = """
         UPDATE RentalRecord
         SET carReturned = CURRENT_TIMESTAMP
-        WHERE rentalNumber = %s AND carReturned IS NULL;
+        WHERE rentalNumber ILIKE %s AND carReturned IS NULL;
     """
     availabilityQuery = """
         UPDATE Car
         SET availability = 't'
-        WHERE Car.id = (SELECT RentalRecord.carid FROM RentalRecord WHERE rentalNumber = %s AND carreturned IS NULL);
+        WHERE Car.id = (SELECT RentalRecord.carid FROM RentalRecord WHERE rentalNumber ILIKE %s AND carreturned IS NULL);
     """
     updateStatusQuery = """
         UPDATE RentalRecord
@@ -267,15 +267,15 @@ def get_rental_cost():
         END AS overtime
         FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carReturned - RentalRecord.expectedReturn)/3600 * 75)::float AS overtime
         FROM RentalRecord
-        WHERE RentalRecord.RentalNumber = %s) AS Temp
+        WHERE RentalRecord.RentalNumber ILIKE %s) AS Temp
         GROUP BY Temp.overtime) AS T2
         JOIN (SELECT Tempy.initCost
         FROM (SELECT EXTRACT(EPOCH FROM (RentalRecord.carRented - RentalRecord.carReturned)/3600 * Car.hourlyRate * -1)::float AS initCost
         FROM RentalRecord
         JOIN Car on (RentalRecord.carID = Car.ID)
-        WHERE RentalRecord.RentalNumber = %s) AS Tempy
+        WHERE RentalRecord.RentalNumber ILIKE %s) AS Tempy
         GROUP BY Tempy.initCost) AS T1 ON TRUE)
-        WHERE RentalRecord.RentalNumber = %s
+        WHERE RentalRecord.RentalNumber ILIKE %s
         RETURNING totalCost;
     """
     conn = None
@@ -319,7 +319,7 @@ def query_rental():
             FROM RentalRecord
 	        JOIN Customer ON (Customer.id = RentalRecord.Customerid)
 	        JOIN Car ON (Car.id = RentalRecord.Carid)
-            WHERE RentalRecord.RentalNumber = %s;
+            WHERE RentalRecord.RentalNumber ILIKE %s;
             """      
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
@@ -341,7 +341,7 @@ def query_rental():
 def add_car():
 
     query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s);"""
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, true);"""
     values = request.json
 
     car = values['car']
@@ -354,14 +354,13 @@ def add_car():
     numaccidents = car['numaccidents']
     seats = car['seats']
     hourlyrate = car['hourlyrate']
-    availability = car['availability']
 
     conn = None
 
     try: 
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
-        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate, availability))
+        cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate))
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -416,7 +415,7 @@ def update_accidents():
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN = %(car_vin)s;
+        WHERE VIN ILIKE %(car_vin)s;
         """
     try: 
         conn = psycopg2.connect(DATABASE_DEFAULT)
@@ -426,7 +425,7 @@ def update_accidents():
         })
         retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
         if retval == 0:
-            return "That Car Does Not Exist", 500
+            return "That car does not exist.", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -462,13 +461,13 @@ def query_cars():
     else:
         show_car_query += 'Car.NumAccidents >= 0 '
     if filter['vin'] != '': 
-        show_car_query += 'AND Car.VIN =  %(car_vin)s '
+        show_car_query += 'AND Car.VIN ILIKE  %(car_vin)s '
     if filter['name'] != '': 
-        show_car_query += 'AND CarType.Name = %(car_name)s '
+        show_car_query += 'AND CarType.Name ILIKE %(car_name)s '
     if filter['make'] != '': 
-        show_car_query += 'AND Car.Make = %(car_make)s '
+        show_car_query += 'AND Car.Make ILIKE %(car_make)s '
     if filter['model'] != '': 
-        show_car_query += 'AND Car.Model = %(car_model)s '
+        show_car_query += 'AND Car.Model ILIKE %(car_model)s '
     if filter['year'] != '': 
         show_car_query += 'AND Car.Year = %(car_year)s '
     if filter['seats'] != '': 
@@ -590,7 +589,7 @@ def update_availability_status():
     updateStatusQuery = """
         UPDATE Car
         SET availability = %s
-        WHERE vin = %s;
+        WHERE vin ILIKE %s;
     """
     check_car_exists = """
         SELECT vin 
