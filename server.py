@@ -400,11 +400,21 @@ def add_car():
 @app.route('/remove_car', methods=['DELETE'])
 def remove_car():
     query = """DELETE FROM Car
-               WHERE vin ILIKE %s"""
+               WHERE vin ILIKE %s AND availability = true"""
     is_deleted_query = """
         SELECT ID
         FROM CAR 
         WHERE vin ILIKE %s AND Car.isDeleted = true;
+    """
+    check_availability = """
+        SELECT ID
+        FROM Car
+        WHERE vin ILIKE %s AND Car.availability = true;
+    """
+    check_existence = """
+        SELECT ID
+        FROM Car
+        WHERE vin ILIKE %s;
     """
 
     values = request.json
@@ -417,6 +427,14 @@ def remove_car():
     try: 
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
+        cur.execute(check_existence, (vin,))
+        check_entries = cur.fetchall()
+        if len(check_entries) < 1:
+            return "That car does not exist.", 500
+        cur.execute(check_availability, (vin,))
+        check_entries = cur.fetchall()
+        if len(check_entries) == 0:
+            return "That car is currently being rented. Return the car first.", 500
         cur.execute(is_deleted_query, (vin,))
         deleted_entries = cur.fetchall();
         if (len(deleted_entries) > 0):
