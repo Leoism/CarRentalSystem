@@ -12,3 +12,4 @@ __pycache__
 
 # program files
 .env
+.DS_Store
