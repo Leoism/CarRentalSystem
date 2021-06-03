@@ -16,3 +16,21 @@ tbody tr:hover {
 th { 
     font-size: 1.2rem;
 }
+
+.login-container {
+    text-align: center;
+}
+.login-container h2 {
+    padding-top: 2rem;
+}
+
+.agent-container {
+    padding-top: 2rem;
+    text-align: center;
+}
+
+.rental-container {
+    width: 90%;
+    margin: auto;
+    padding-top: 2rem;
+}

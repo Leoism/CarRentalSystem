@@ -6,7 +6,6 @@
     <script type="text/javascript" src="/static/scripts/customer_navigation_template.js"></script>
     <link rel="stylesheet" href="/static/styles/navbar.css">
     <link rel="stylesheet" href="/static/styles/style.css">
-    <!--<link rel="preconnect" href="https://fonts.gstatic.com">-->
     <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400&display=swap" rel="stylesheet">
 </head>
 
@@ -28,20 +27,31 @@
     </div>
     <div class='container'>
         <div class='indexinput'>
+            <label for="car_vin">Vin #</label>
             <input id="car_vin" placeholder="VIN">
+            <label for="car_name">Car Type</label>
             <input id="car_name" placeholder="Type">
+            <label for="car_make">Make</label>
             <input id="car_make" placeholder="Make">
+            <label for="car_model">Model</label>
             <input id="car_model" placeholder="Model">
+            <label for="car_year">Year</label>
             <input id="car_year" placeholder="Year" type="number">
+            <label for="car_acc"># of Accidents</label>
             <input id="car_acc" placeholder="Accidents" type="number">
+            <label for="car_seats"># of Seats</label>
             <input id="car_seats" placeholder="Seats" type="number">
+            <label for="car_price">Rental Price</label>
             <input id="car_price" placeholder="Hourly Rate Maximum" type="number">
+            <label for="car_avail">Available</label>
             <select id="car_avail">
                 <option disabled>Avalibility</option>
                 <option value="true">True</option>
                 <option value="false">False</option>
             </select>
+            <label for="car_rate">Rating</label>
             <input id="car_rate" placeholder="Rating" type="number">
+            <hr>
             <button onclick="queryCars()" id="car-button">Cars</button>
         </div>
     </div>

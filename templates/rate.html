@@ -2,17 +2,17 @@
 <script type="text/javascript" src="/static/scripts/customer_navigation_template.js"></script>
 <script type="text/javascript" src="/static/scripts/eventListeners.js"></script>
 <link rel="stylesheet" href="/static/styles/navbar.css">
+<link rel="stylesheet" href="/static/styles/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400&display=swap" rel="stylesheet">
 <customer-nav-bar></customer-nav-bar>
-<div>
-  <h1>Rate your Rental Experience</h1>
-  <label for="rental-number">Rental Number</label>
-  <input id="rental-number" type="text" minlength="16" maxlength="16">
-  <label for="rating">Rating</label>
-  <input type="range" min="0" max="5" value="5" id="rating">
-  <span id="rating-val"></span>
-  <hr>
-  <button onclick="rateRental()">Rate</button>
-</div>
-<body>
+<div class="container">
+    <h1>Rate your Rental Experience</h1>
+    <label for="rental-number">Rental Number</label>
+    <input id="rental-number" type="text" minlength="16" maxlength="16">
+    <label for="rating">Rating</label>
+    <input type="range" min="0" max="5" value="5" id="rating">
+    <span id="rating-val"></span>
+    <hr>
+    <button onclick="rateRental()">Rate</button>
     <p>Rental number: case insensitive</p>
-</body>
+</div>

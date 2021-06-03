@@ -2,7 +2,7 @@
  * Creates a custom NavigationBar component. Can be called as a tag using:
  * <customer-nav-bar></customer-nav-bar>
  */
-class CustomerNavigationBar extends HTMLElement {
+ class CustomerNavigationBar extends HTMLElement {
   /** Sets the HTML for the NavigationBar element. */
   connectedCallback() {
       this.innerHTML = `

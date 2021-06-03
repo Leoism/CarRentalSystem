@@ -2,21 +2,23 @@
 <script type="text/javascript" src="/static/scripts/agent_navigation_template.js"></script>
 <script type="text/javascript" src="/static/scripts/agent_cookie.js"></script>
 <link rel="stylesheet" href="/static/styles/navbar.css">
+<link rel="stylesheet" href="/static/styles/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400&display=swap" rel="stylesheet">
 <agent-nav-bar></agent-nav-bar>
-<div>
+<div class="container">
     <h1>Customer Information</h1>
     <label for="cust-fname">First Name</label>
-    <input id="cust-fname" type="text" />
+    <input id="cust-fname" placeholder="First Name" type="text" />
     <label for="cust-lname">Last Name</label>
-    <input id="cust-lname" type="text" />
-    <label for="cust-lic">Driver's License ID</label>
-    <input id="cust-lic" type="text" />
-    <label for="cust-bday">Birth date</label>
-    <input id="cust-bday" type="date" />
+    <input id="cust-lname" placeholder="Last Name" type="text" />
+    <label for="cust-bday">Birthdate</label>
+    <input id="cust-bday" placeholder="Birthday" type="date" />
+    <label for="cust-license">Driver's License #:</label>
+    <input id="cust-license" placeholder="License #" type="text" />
     <label for="cust-street">Street</label>
-    <input id="cust-street" type="text" />
+    <input id="cust-street" placeholder="Street" type="text" />
     <label for="cust-city">City</label>
-    <input id="cust-city" type="text" />
+    <input id="cust-city" placeholder="City" type="text" />
     <label for="cust-state">State</label>
     <select value="State" id="cust-state">
         <option value="AL">Alabama</option>
@@ -73,8 +75,6 @@
     </select>
     <hr>
     <button onclick="addCustomer()">Add Customer</button>
-</div>
-<body>
     <p>Add a customer. All fields must be populated. </p>
     <p>Driver's License ID must not exceed 32 characters.</p>
-</body>
+</div>
