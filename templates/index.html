@@ -13,7 +13,8 @@
     <customer-nav-bar></customer-nav-bar>
     <div class='container'>
         <h2>Search for any car in the database.</h2>
-        <p>Any number of fields can be populated, it will query by all non-empty fields. Availability must be true/false.</p>
+        <p>Any number of fields can be populated, it will query by all non-empty fields. Availability must be
+            true/false.</p>
         <ul>
             <li>VIN: Search for a car by VIN (case insensitive, exact match)</li>
             <li>Type: Search for a car by type (case insensitive, exact match)</li>
@@ -30,7 +31,12 @@
             <label for="car_vin">Vin #</label>
             <input id="car_vin" placeholder="VIN">
             <label for="car_name">Car Type</label>
-            <input id="car_name" placeholder="Type">
+            <select id="car_name">
+                <option value="SUV">SUV</option>
+                <option value="Sedan">Sedan</option>
+                <option value="Coupe">Coupe</option>
+                <option value="Mini Van">Mini Van</option>
+            </select>
             <label for="car_make">Make</label>
             <input id="car_make" placeholder="Make">
             <label for="car_model">Model</label>
