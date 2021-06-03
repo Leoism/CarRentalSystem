@@ -21,6 +21,7 @@
             <li>Model: Search for a car by model (case insensitive, exact match)</li>
             <li>Year: Search for a car by year</li>
             <li>Accidents: Search for a car with accidents <= the entered value</li>
+            <li>Num seats: Search for a car with a certain number of seats (exact match)</li>
             <li>Hourly rate maximum: Search for a car with hourly rate <= the entered value</li>
             <li>Rating: Search for a car with average rating >= the entered value</li>
         </ul>
@@ -30,7 +31,12 @@
             <label for="car_vin">Vin #</label>
             <input id="car_vin" placeholder="VIN">
             <label for="car_name">Car Type</label>
-            <input id="car_name" placeholder="Type">
+            <select id="car_name">
+                <option value="SUV">SUV</option>
+                <option value="Sedan">Sedan</option>
+                <option value="Coupe">Coupe</option>
+                <option value="Mini Van">Mini Van</option>
+            </select>
             <label for="car_make">Make</label>
             <input id="car_make" placeholder="Make">
             <label for="car_model">Model</label>
