@@ -34,7 +34,8 @@ CREATE TABLE public.car (
     numaccidents integer NOT NULL,
     seats integer NOT NULL,
     hourlyrate numeric(5,2) NOT NULL,
-    availability boolean NOT NULL
+    availability boolean NOT NULL,
+    isdeleted boolean NOT NULL
 );
 
 
@@ -158,12 +159,12 @@ ALTER TABLE ONLY public.customer ALTER COLUMN id SET DEFAULT nextval('public.cus
 -- Data for Name: car; Type: TABLE DATA; Schema: public
 --
 
-INSERT INTO public.car VALUES (1, '12345VINCARTHING', 'SE', 'Toyota', 'Corolla', 2018, 1, 5, 45.00, true);
-INSERT INTO public.car VALUES (2, '09876VINCARTHING', 'SU', 'Ford', 'Escape', 2021, 0, 6, 75.00, true);
-INSERT INTO public.car VALUES (3, '12121VINCARTHING', 'SE', 'Subaru', 'Legacy', 2021, 0, 5, 23.55, true);
-INSERT INTO public.car VALUES (4, '33333VINCARTHING', 'SE', 'Subaru', 'WRX', 2020, 0, 5, 28.55, true);
-INSERT INTO public.car VALUES (5, '11111VINCARTHING', 'SU', 'Honda', 'Passport', 2020, 0, 8, 41.22, true);
-INSERT INTO public.car VALUES (6, '1234567890123456', 'CO', 'BMW', 'M4', 2021, 0, 5, 71.22, true);
+INSERT INTO public.car VALUES (1, '12345VINCARTHING', 'SE', 'Toyota', 'Corolla', 2018, 1, 5, 45.00, true, false);
+INSERT INTO public.car VALUES (2, '09876VINCARTHING', 'SU', 'Ford', 'Escape', 2021, 0, 6, 75.00, true, false);
+INSERT INTO public.car VALUES (3, '12121VINCARTHING', 'SE', 'Subaru', 'Legacy', 2021, 0, 5, 23.55, true, false);
+INSERT INTO public.car VALUES (4, '33333VINCARTHING', 'SE', 'Subaru', 'WRX', 2020, 0, 5, 28.55, true, false);
+INSERT INTO public.car VALUES (5, '11111VINCARTHING', 'SU', 'Honda', 'Passport', 2020, 0, 8, 41.22, true, false);
+INSERT INTO public.car VALUES (6, '1234567890123456', 'CO', 'BMW', 'M4', 2021, 0, 5, 71.22, true, false);
 
 --
 -- Data for Name: cartype; Type: TABLE DATA; Schema: public
