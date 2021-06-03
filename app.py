@@ -13,6 +13,7 @@ import random # add as req
 # from config import config
 
 app = Flask(__name__)
+MISC_ERROR_MSG = "An unexpected error occurred. This is not related to the database. Check your inputs again."
 DATABASE_DEFAULT = 'postgres://bicmtliamldnxg:55b4e5a6811f775cadc10e35b162034ff07e4feffd8f6adda348b23ab147431f@ec2-18-215-111-67.compute-1.amazonaws.com:5432/d1v5bd4t1v3do'
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', DATABASE_DEFAULT)
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -324,6 +325,8 @@ def query_rental():
 	        JOIN Car ON (Car.id = RentalRecord.Carid)
             WHERE RentalRecord.RentalNumber ILIKE %s;
             """      
+    if rental_record['rental_number'] != "ALL":
+        rentalInfoQuery += "WHERE RentalRecord.rentalNumber ILIKE %s"
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
