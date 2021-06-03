@@ -387,10 +387,10 @@ def add_car():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "Car could not be added because that VIN number is already used", 500
     if conn is not None:
         conn.close()
-    return "Successfully added a car", 201
+    return "Successfuly Added a Car", 201
 
 @app.route('/remove_car', methods=['DELETE'])
 def remove_car():
@@ -422,7 +422,7 @@ def remove_car():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "That car is not in the database", 500
     if conn is not None:
         conn.close()
     return "Successfuly Removed a Car", 200
@@ -459,7 +459,7 @@ def update_accidents():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "A car with that VIN was not found", 500
     if conn is not None:
         conn.close()
     return "Successfully Added an Incident to a Car", 200
@@ -539,7 +539,7 @@ def query_cars():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "An error was found on Python's end", 500
     if conn is not None:
         conn.close()
     return render_template("index.html", rows=rows, column_names=column_names)
@@ -604,7 +604,7 @@ def add_customer():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Error", 500
+        return "Error: a customer with that information may already be added.", 500
     return "success", 201
 
 @app.route('/customer', methods=["GET"])
