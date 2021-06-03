@@ -5,16 +5,24 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="/static/scripts/agent_cookie.js"></script>
+  <script type="text/javascript" src="/static/scripts/customer_navigation_template.js"></script>
+  <link rel="stylesheet" href="/static/styles/navbar.css">
+  <link rel="stylesheet" href="/static/styles/style.css">
   <title>Document</title>
 </head>
 
 <body>
+  <customer-nav-bar></customer-nav-bar>
   <template id="agent-page"></template>
-  <label for="username">Username:</label>
-  <input id="username" type="text">
-  <label for="password">Password:</label>
-  <input id="password" type="password">
-  <button onclick="login()">Login</button>
+  <div class="login-container">
+    <h2>Please enter agent username and password</h2>
+    <input id="username" placeholder="Username" type="text">
+    <br>
+    <input id="password" placeholder="Password" type="password">
+    <br>
+    <button onclick="login()">Login</button>
+  </div>
+  
 </body>
 
 </html>

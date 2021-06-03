@@ -8,16 +8,17 @@
     <script type="text/javascript" src="/static/scripts/agent_navigation_template.js"></script>
     <script type="text/javascript" src="/static/scripts/agent_cookie.js"></script>
     <link rel="stylesheet" href="/static/styles/navbar.css">
+    <link rel="stylesheet" href="/static/styles/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400&display=swap" rel="stylesheet">
 </head>
 
-<body style="background-color: #e5e5e5;">
+<body>
     <agent-nav-bar></agent-nav-bar>
-    <div>
+    <div class="container">
         <h1 class="header">Add Car Information</h1>
 
         <label for="vin">VIN</label>
         <input id="vin" type="text" minlength="11" maxlength="17" />
-        <br>
         <label for="cartype">Car Type</label>
         <select id="cartype">
             <option value="SU">SUV</option>
@@ -25,39 +26,35 @@
             <option value="CO">Coupe</option>
             <option value="MV">Mini Van</option>
         </select>
-        <br>
         <label for="make">Make</label>
-        <input id="make" type="text" />
-        <br>
+        <input id="make" placeholder="Make" type="text" />
         <label for="model">Model</label>
-        <input id="model" type="text" />
-        <br>
+        <input id="model" placeholder="Model" type="text" />
         <label for="year">Year</label>
-        <input id="year" type="number" min="1950" max="2022" />
-        <br>
+        <input id="year" placeholder="Year" type="number" min="1950" max="2022" />
         <label for="numaccidents"># of Accidents</label>
-        <input id="numaccidents" type="number" min="0" />
-        <br>
+        <input id="numaccidents" placeholder="# of Accidents" type="number" min="0" />
         <label for="seats"># of Seats</label>
-        <input id="seats" type="number" min="1" />
-        <br>
+        <input id="seats" placeholder="# of Seats" type="number" min="1" />
         <label for="hourlyrate">Hourly Rate</label>
-        <input id="hourlyrate" type="number" min="0" />
-        <br>
+        <input id="hourlyrate" placeholder="Hourly Rate" type="number" min="0" />
+        <hr>
         <button onclick="addCar()">Add Car</button>
     </div>
 
-    <div>
+    <div class="container">
         <h1 class="header">Remove a Car by Vin</h1>
         <label for="r-vin">VIN</label>
-        <input id="r-vin" type="text" minlength="11" maxlength="17" />
+        <input id="r-vin" placeholder="Vin #" type="text" minlength="11" maxlength="17" />
+        <hr>
         <button onclick="removeCar()">Remove Car</button>
     </div>
 
-    <div>
+    <div class="container">
         <h1 class="header">Add an Incident by Vin</h1>
         <label for="car-vin">VIN</label>
-        <input id="car-vin" type="text" minlength="11" maxlength="17" />
+        <input id="car-vin" placeholder="Vin #" type="text" minlength="11" maxlength="17" />
+        <hr>
         <button onclick="updateAccidents()">Add Incident</button>
     </div>
 </body>
