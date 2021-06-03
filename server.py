@@ -55,9 +55,11 @@ def connect():
         Car.Seats, Car.HourlyRate, Car.Availability, Table1.Rating 
         FROM Car
             JOIN CarType ON (CarType.type = Car.CarType)
-            LEFT JOIN (SELECT RatingRecord.carID, SUM(RatingRecord.rating) / COUNT(RatingRecord.rating) AS Rating
+            LEFT JOIN (
+                SELECT RatingRecord.carID, SUM(RatingRecord.rating) / COUNT(RatingRecord.rating) AS Rating
                 FROM RatingRecord
-                GROUP BY RatingRecord.carId) AS Table1 ON (Car.ID = Table1.CarID);""") # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
+                GROUP BY RatingRecord.carId) AS Table1 ON (Car.ID = Table1.CarID)
+        WHERE Car.isDeleted = false;""") # FORMAT: (1) generate connection cursor, (2) execute query, (3) fetchall, (4) print
 
         # display the PostgreSQL database server version
         # db_version = cur.fetchone()
@@ -151,7 +153,7 @@ def create_rental():
     check_avail_query = """
         SELECT availability
         FROM Car
-        WHERE Car.availability = 'true' AND Car.VIN ILIKE %s;
+        WHERE Car.availability = 'true' AND Car.VIN ILIKE %s AND Car.isDeleted = false;
     """
     try:
         conn = psycopg2.connect(database_url)
@@ -204,7 +206,7 @@ def create_rental():
     # Second, we must create a rental record and a rental number
     rent_query = """
         INSERT INTO RentalRecord (CarID, CustomerID, carRented, expectedReturn, rentalNumber)
-        VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s),
+        VALUES ((SELECT Car.ID FROM Car WHERE Car.VIN = %(car_vin)s AND Car.isDeleted = false),
         (SELECT Customer.ID FROM Customer
         WHERE Customer.licenseID ILIKE %(license_id)s AND
             Customer.firstName ILIKE %(first_name)s AND 
@@ -238,7 +240,7 @@ def create_rental():
     update_avail = """
         UPDATE Car
         SET availability = 'false'
-        WHERE Car.VIN ILIKE %s;
+        WHERE Car.VIN ILIKE %s And Car.isDeleted = false;
         """
     try:
         # update the availability of the car to be unavialable
@@ -268,7 +270,7 @@ def query_rental():
             FROM RentalRecord
                 JOIN Customer ON (Customer.id = RentalRecord.CustomerID)
                 JOIN Car ON (Car.id = RentalRecord.CarID)
-            WHERE RentalRecord.RentalNumber ILIKE %s;
+            WHERE RentalRecord.RentalNumber ILIKE %s
             """      
     try:
         conn = psycopg2.connect(database_url)
@@ -348,6 +350,16 @@ def add_car():
 
     query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'true');"""
+    is_deleted_query = """
+        SELECT ID 
+        FROM CAR
+        WHERE vin = %s AND isDeleted = true;
+    """
+    re_add_car = """
+        UPDATE Car
+        SET isDeleted = false
+        WHERE vin = %s
+    """
     values = request.json
 
     car = values['car']
@@ -366,6 +378,14 @@ def add_car():
     try: 
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
+        cur.execute(is_deleted_query, (vin,))
+        deleted_entries = cur.fetchall()
+        if (len(deleted_entries) > 0):
+            cur.execute(re_add_car, (vin,))
+            conn.commit()
+            cur.close()
+            return "Successfully added a car.", 201
+
         cur.execute(query, (vin, carType, make, model, year, numaccidents, seats, hourlyrate))
         conn.commit()
         cur.close()
@@ -375,12 +395,17 @@ def add_car():
         return "Error", 500
     if conn is not None:
         conn.close()
-    return "Successfuly Added a Car", 201
+    return "Successfully added a car", 201
 
 @app.route('/remove_car', methods=['DELETE'])
 def remove_car():
     query = """DELETE FROM Car
-               WHERE vin ILIKE %s; """
+               WHERE vin ILIKE %s"""
+    is_deleted_query = """
+        SELECT ID
+        FROM CAR 
+        WHERE vin ILIKE %s AND Car.isDeleted = true;
+    """
 
     values = request.json
     
@@ -392,10 +417,11 @@ def remove_car():
     try: 
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
+        cur.execute(is_deleted_query, (vin,))
+        deleted_entries = cur.fetchall();
+        if (len(deleted_entries) > 0):
+            return "That car does not exist", 500
         cur.execute(query, (vin,))
-        retval = cur.rowcount #apparently compares the values to make sure there is a match in the database
-        if retval == 0:
-            return "That Car Does Not Exist", 500
         conn.commit()
         cur.close()
     except (Exception, psycopg2.DatabaseError) as error:
@@ -422,7 +448,7 @@ def update_accidents():
     update_acid = """
         UPDATE Car
         SET numAccidents = numAccidents + 1
-        WHERE VIN ILIKE %(car_vin)s;
+        WHERE VIN ILIKE %(car_vin)s AND isDeleted = false;
         """
     try: 
         conn = psycopg2.connect(database_url)
@@ -487,7 +513,7 @@ def query_cars():
         show_car_query += 'AND Table1.Rating >= %(car_rate)s '       
              
     #show_car_query += 'GROUP BY ratingrecord.carid,Car.ID, Car.VIN, Car.CarType, Car.Make, Car.Model, Car.Year;' 
-    show_car_query += ';'
+    show_car_query += 'AND Car.isDeleted = false;'
     try:
         conn = psycopg2.connect(database_url)
         cur = conn.cursor()
@@ -596,12 +622,12 @@ def update_availability_status():
     updateStatusQuery = """
         UPDATE Car
         SET availability = %s
-        WHERE vin ILIKE %s;
+        WHERE vin ILIKE %s AND Car.isDeleted = false;
     """
     check_car_exists = """
         SELECT vin 
         FROM Car 
-        WHERE vin ILIKE %s;
+        WHERE vin ILIKE %s AND Car.isDeleted = false;
     """
     conn = None
     try:
