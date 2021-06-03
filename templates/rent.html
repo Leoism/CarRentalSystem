@@ -25,12 +25,12 @@
   <input id="rental-length" placeholder="Rental Length (Days)" type="number" min="1">
   <hr>
   <button onclick="rentCar()">Rent</button>
+  <p>All fields (both customer info and car info) must be filled.</p>
+  <p>Driver's license ID is case insensitive.</p>
+  <p>Car VIN is case insensitive.</p>
+  <p>Rental length is in days, bound between 1 and 30</p>
 </div>
 
-<p>All fields (both customer info and car info) must be filled.</p>
-<p>Driver's license ID is case insensitive.</p>
-<p>Car VIN is case insensitive.</p>
-<p>Rental length is in days, bound between 1 and 30</p>
 
 <div class="rental-container">
   <h1>Get total rental cost</h1>
@@ -38,9 +38,9 @@
   <input id="rental-num1" placeholder="Rental Number" type="text" />
   <hr />
   <button onclick="getRentalCost()">Get cost</button>
+  <p>Rental number is case insensitive.</p>
 </div>
 
-<p>Rental number is case insensitive.</p>
 
 <div class="rental-container">
   <h1>Get rental info</h1>
