@@ -2,36 +2,40 @@
 <script type="text/javascript" src="/static/scripts/agent_navigation_template.js"></script>
 <script type="text/javascript" src="/static/scripts/agent_cookie.js"></script>
 <link rel="stylesheet" href="/static/styles/navbar.css">
+<link rel="stylesheet" href="/static/styles/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Ubuntu:wght@300;400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/styles/navbar.css">
 <agent-nav-bar></agent-nav-bar>
-<div>
+
+<div class="rental-container">
   <h1>Rent a car:</h1>
-  <h3>Customer Information:</h3>
+  <h3>Enter Customer Information:</h3>
   <label for="cust-fname">First Name</label>
-  <input id="cust-fname" type="text" />
+  <input id="cust-fname" placeholder="First Name" type="text" />
   <label for="cust-lname">Last Name</label>
-  <input id="cust-lname" type="text" />
+  <input id="cust-lname" placeholder="Last Name" type="text" />
   <label for="cust-license">Driver's License #:</label>
-  <input id="cust-license" type="text" />
-  <label for="cust-bday">birthdate</label>
-  <input id="cust-bday" type="date" />
-  <h3>Car Information:</h3>
+  <input id="cust-license" placeholder="Drivers License" type="text" />
+  <label for="cust-bday">Birthdate</label>
+  <input id="cust-bday" placeholder="Birthday" type="date" />
+  <h3>Enter Car Information:</h3>
   <label for="car-vin">Car VIN</label>
-  <input id="car-vin" type="text" minlength="11" maxlength="17">
+  <input id="car-vin" placeholder="Vin #" type="text" minlength="11" maxlength="17">
   <label for="rental-length">Renting Days Amounts</label>
-  <input id="rental-length" type="number" min="1">
+  <input id="rental-length" placeholder="Rental Length (Days)" type="number" min="1">
   <hr>
   <button onclick="rentCar()">Rent</button>
 </div>
 
-<div>
+<div class="rental-container">
   <h1>Get total rental cost</h1>
   <label for="rental-num1">Rental Number</label>
-  <input id="rental-num1" type="text" />
+  <input id="rental-num1" placeholder="Rental Number" type="text" />
   <hr />
   <button onclick="getRentalCost()">Get cost</button>
 </div>
 
-<div>
+<div class="rental-container">
   <h1>Get rental info</h1>
   <div class='div_outer'>
     <table style="width: 100%;">
@@ -52,7 +56,7 @@
 
   <br />
   <label for="rental-num">Rental Number</label>
-  <input id="rental-num" placeholder="rental-number" />
+  <input id="rental-num" placeholder="Rental Number" />
   <button onclick="queryRental()" id="rental-q-button">Get Rental Info</button>
   <br />
 </div>

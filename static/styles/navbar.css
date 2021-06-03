@@ -3,19 +3,31 @@
   margin: 0;
   padding: 0;
   overflow: hidden;
-  background-color: #333;
+  display: flex;
+  justify-content: space-around;
+  width: 50%;
+}
+
+nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    min-height: 7vh;
+    background-color: #333;
 }
 
 .link-container {
-  float: left;
+  float: right;
 }
 
 .link-container .link {
   display: block;
+  position: relative;
   color: white;
   text-align: center;
   padding: 14px 16px;
   text-decoration: none;
+  font-size: 16px;
 }
 
 .link-container .link:hover {
@@ -35,4 +47,9 @@ td {
 
 body {
   margin: 0 auto;
+}
+
+.logo { 
+    color: white;
+    font-size: 24px;
 }
