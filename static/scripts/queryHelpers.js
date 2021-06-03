@@ -340,12 +340,12 @@ async function queryCars() {
 
 async function queryRental() {
   // extract all the input values
-  const rentalNum = document.getElementById('rental-num').value;
+  let rentalNum = document.getElementById('rental-num').value;
   // ensure they all have a value
   if (!rentalNum) {
-    alert("You cannot have null values.");
-    return "You cannot have null values.";
+    rentalNum = "ALL"
   }
+
   const options = {
     rental_record: {
       rental_number: rentalNum,
