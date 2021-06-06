@@ -514,7 +514,7 @@ def query_cars():
         show_car_query += 'Car.NumAccidents >= 0 '
     if filter['vin'] != '': 
         show_car_query += 'AND Car.VIN ILIKE  %(car_vin)s '
-    if filter['name'] != '': 
+    if filter['name'] != 'ALL' and filter['name'] != '': 
         show_car_query += 'AND CarType.Name ILIKE %(car_name)s '
     if filter['make'] != '': 
         show_car_query += 'AND Car.Make ILIKE %(car_make)s '
