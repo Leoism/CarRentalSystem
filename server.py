@@ -610,6 +610,30 @@ def _generate_number(length):
         conn.close()
         return None
 
+@app.route('/get_customers', methods=['GET'])
+def get_customers():
+    customer_query = """
+        SELECT licenseID, FirstName, LastName, BirthDate, street, city, state
+        FROM Customer;
+    """
+    column = None
+    rows = None
+    conn = None
+    try:
+        conn = psycopg2.connect(database_url)
+        cur = conn.cursor()
+        cur.execute(customer_query)
+        rows = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "There was an unexpected error. Try again.", 500
+
+    if conn is not None:
+        conn.close()
+    return render_template("addCustomer.html", rows=rows, column_names=column_names)
+
 @app.route('/add_customer', methods=["POST"])
 def add_customer():
     values = request.json

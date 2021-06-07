@@ -78,3 +78,31 @@
     <p>Add a customer. All fields must be populated. </p>
     <p>Driver's License ID must not exceed 32 characters.</p>
 </div>
+
+<script>
+    window.onload = async () => {
+        document.querySelector('html').innerHTML = await fetch('get_customers').then((res) => res.text()); 
+    }
+</script>
+
+<div class="container">
+    <h1>Current Registered Customers</h1>
+        <div class="container">
+            <div class='div_outer'>
+                <table style="width: 100%;">
+                    <tr>
+                        {% for column_name in column_names: %}
+                        <th>{{column_name}}</th>
+                        {% endfor %}
+                    </tr>
+                    {% for row in rows: %}
+                    <tr>
+                        {% for item in row: %}
+                        <td style="text-align:center">{{item}}</td>
+                        {% endfor %}
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
+</div>
