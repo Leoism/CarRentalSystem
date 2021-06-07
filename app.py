@@ -317,7 +317,7 @@ def query_rental():
     rental_record = json.loads(values)['rental_record']
     #print(rental_record) # aaaaaa
     rentalInfoQuery = """
-            SELECT Customer.firstname, Customer.lastname, RentalRecord.carRented, RentalRecord.carReturned,
+            SELECT Customer.firstname, Customer.lastname, Customer.licenseID, RentalRecord.carRented, RentalRecord.carReturned,
 	        RentalRecord.expectedReturn, RentalRecord.rentalNumber, RentalRecord.totalCost, Car.carType, 
 	        Car.Make, Car.Model, Car.Year, Car.hourlyRate
             FROM RentalRecord
@@ -346,8 +346,8 @@ def query_rental():
 @app.route('/add_car', methods=['POST'])
 def add_car():
 
-    query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability) 
-                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'true');"""
+    query = """ INSERT INTO Car (VIN, carType, make, model, year, numaccidents, seats, hourlyrate, availability, isdeleted) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s, 'true', 'false');"""
     is_deleted_query = """
         SELECT ID 
         FROM CAR
@@ -390,10 +390,10 @@ def add_car():
     except (Exception, psycopg2.DatabaseError) as error:
         print(error)
         conn.close()
-        return "Car could not be added because that VIN number is already used", 500
+        return "An error has occurred. Check the VIN length, whether a car with that VIN already exists, that the year has been entered properly, and that all fields have been properly filled. ", 500
     if conn is not None:
         conn.close()
-    return "Successfuly Added a Car", 201
+    return "Successfuly added a car", 201
 
 @app.route('/remove_car', methods=['DELETE'])
 def remove_car():
@@ -441,7 +441,7 @@ def remove_car():
         return "That car is not in the database", 500
     if conn is not None:
         conn.close()
-    return "Successfuly Removed a Car", 200
+    return "Successfuly removed a car", 200
 
 @app.route('/car', methods=['GET'])
 def return_car():
@@ -478,7 +478,7 @@ def update_accidents():
         return "A car with that VIN was not found", 500
     if conn is not None:
         conn.close()
-    return "Successfully Added an Incident to a Car", 200
+    return "Successfully added an incident to a car", 200
 
 
 @app.route('/queryCars')
@@ -601,6 +601,48 @@ def _generate_number(length):
         print(error)
         conn.close()
         return None
+    
+    
+"""
+    Generates a random number containing both numbers and letters of size length. 
+"""
+def _generate_number(length):
+    # Turn string to list to allow inserting at the front
+    new_ren_num = list(str(int(time.time())))[::-1]
+    # ensure the length is greater than the timestamp length
+    if (length < len(new_ren_num)):
+        raise ValueError("Invalid length")
+    # determine the amount of alpha characters to add to the number
+    alpha_size = length - len(new_ren_num)
+    alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+    # add alpha characters to the front of the string
+    for i in range(alpha_size):
+        new_ren_num.insert(0, alpha[random.randint(0, len(alpha) - 1)])
+    # convert the list back to a string
+    new_ren_num = ''.join(new_ren_num)
+
+    rental_query = """
+        SELECT rentalNumber
+        FROM RentalRecord;
+    """
+    try:
+        conn = psycopg2.connect(DATABASE_DEFAULT)
+        cur = conn.cursor()
+        cur.execute(rental_query)
+        rental_records = cur.fetchall()
+        # go through every rental records rental number to ensure we have a unique number
+        for rental_record in rental_records:
+            for rental_number in rental_record:
+                # if the new rental number is not unique, shuffle the number until it is unique
+                while rental_number == new_ren_num:
+                    new_ren_num = ''.join(random.sample(new_ren_num, len(new_ren_num)))
+        conn.close()
+        # if the number is unique, return it
+        return new_ren_num
+    except(Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return None
 
 @app.route('/add_customer', methods=["POST"])
 def add_customer():
@@ -609,11 +651,16 @@ def add_customer():
         INSERT INTO Customer (firstname, lastname, licenseID, birthdate, street, city, state)
         VALUES (%s, %s, %s, %s, %s, %s, %s)
     """
-
+    checkCustomer = """SELECT licenseID FROM customer WHERE licenseID ILIKE %s;
+    """
     conn = None
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
+        cur.execute(checkCustomer, (values['license_id'],))
+        licenseExists = cur.fetchall()
+        if len(licenseExists) >= 1:
+            return "A user with the given license ID already exists.", 500
         cur.execute(addCustomerQuery, (values['first_name'], values['last_name'], values['license_id'], values['birthdate'], values['street'], values['city'], values['state'],))
         conn.commit()
         conn.close()
@@ -672,6 +719,30 @@ def agent_template():
 @app.route('/login', methods=["GET"])
 def login_template():
     return render_template("LoginPage.html")
+
+@app.route('/get_customers', methods=['GET'])
+def get_customers():
+    customer_query = """
+        SELECT licenseID, FirstName, LastName, BirthDate, street, city, state
+        FROM Customer;
+    """
+    column = None
+    rows = None
+    conn = None
+    try:
+        conn = psycopg2.connect(DATABASE_DEFAULT)
+        cur = conn.cursor()
+        cur.execute(customer_query)
+        rows = cur.fetchall()
+        column_names = [desc[0] for desc in cur.description]
+    except (Exception, psycopg2.DatabaseError) as error:
+        print(error)
+        conn.close()
+        return "There was an unexpected error. Try again.", 500
+
+    if conn is not None:
+        conn.close()
+    return render_template("addCustomer.html", rows=rows, column_names=column_names)
 
 if __name__ == '__main__':
     app.run()

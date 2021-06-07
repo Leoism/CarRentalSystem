@@ -1,0 +1,406 @@
+--
+-- PostgreSQL database dump
+--
+
+-- Dumped from database version 13.2
+-- Dumped by pg_dump version 13.2
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: car; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.car (
+    id integer NOT NULL,
+    vin character varying(17) NOT NULL,
+    cartype character varying(2) NOT NULL,
+    make character varying(32) NOT NULL,
+    model character varying(32) NOT NULL,
+    year integer NOT NULL,
+    numaccidents integer NOT NULL,
+    seats integer NOT NULL,
+    hourlyrate numeric(5,2) NOT NULL,
+    availability boolean NOT NULL,
+    isdeleted boolean NOT NULL
+);
+
+
+--
+-- Name: car_id_seq; Type: SEQUENCE; Schema: public
+--
+
+CREATE SEQUENCE public.car_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: car_id_seq; Type: SEQUENCE OWNED BY; Schema: public
+--
+
+ALTER SEQUENCE public.car_id_seq OWNED BY public.car.id;
+
+
+--
+-- Name: cartype; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.cartype (
+    type character varying(2) NOT NULL,
+    name character varying(32) NOT NULL
+);
+
+
+--
+-- Name: customer; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.customer (
+    id integer NOT NULL,
+    firstname character varying(64) NOT NULL,
+    lastname character varying(64) NOT NULL,
+    licenseid character varying(32) NOT NULL,
+    birthdate date NOT NULL,
+    street character varying(128) NOT NULL,
+    city character varying(128) NOT NULL,
+    state character varying(2) NOT NULL
+);
+
+
+--
+-- Name: customer_id_seq; Type: SEQUENCE; Schema: public
+--
+
+CREATE SEQUENCE public.customer_id_seq
+    AS integer
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+--
+-- Name: customer_id_seq; Type: SEQUENCE OWNED BY; Schema: public
+--
+
+ALTER SEQUENCE public.customer_id_seq OWNED BY public.customer.id;
+
+
+--
+-- Name: ratingrecord; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.ratingrecord (
+    carid integer NOT NULL,
+    rentalnumber character varying(16) NOT NULL,
+    rating integer NOT NULL
+);
+
+
+--
+-- Name: rentalrecord; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.rentalrecord (
+    carid integer NOT NULL,
+    customerid integer NOT NULL,
+    carrented timestamp without time zone NOT NULL,
+    carreturned timestamp without time zone,
+    expectedreturn timestamp without time zone NOT NULL,
+    rentalnumber character varying(16) NOT NULL,
+    totalcost numeric(10,2)
+);
+
+
+
+--
+-- Name: states; Type: TABLE; Schema: public
+--
+
+CREATE TABLE public.states (
+    id character varying(2) NOT NULL,
+    name character varying(32) NOT NULL
+);
+
+--
+-- Name: car id; Type: DEFAULT; Schema: public
+--
+
+ALTER TABLE ONLY public.car ALTER COLUMN id SET DEFAULT nextval('public.car_id_seq'::regclass);
+
+
+--
+-- Name: customer id; Type: DEFAULT; Schema: public
+--
+
+ALTER TABLE ONLY public.customer ALTER COLUMN id SET DEFAULT nextval('public.customer_id_seq'::regclass);
+
+--
+-- Name: softdeletecars(); Type: FUNCTION; Schema: public
+--
+
+CREATE FUNCTION public.softdeletecars() RETURNS trigger
+    LANGUAGE plpgsql
+    AS $$
+BEGIN  
+  UPDATE Car
+  SET isDeleted = true
+  WHERE ID = Old.ID;
+  RETURN NULL;
+END; $$;
+
+--
+-- Name: car soft_delete_trig; Type: TRIGGER; Schema: public
+--
+
+CREATE TRIGGER soft_delete_trig BEFORE DELETE ON public.car FOR EACH ROW EXECUTE FUNCTION public.softdeletecars();
+
+
+--
+-- Data for Name: car; Type: TABLE DATA; Schema: public
+--
+
+INSERT INTO public.car VALUES (1, '12345VINCARTHING', 'SE', 'Toyota', 'Corolla', 2018, 1, 5, 45.00, true, false);
+INSERT INTO public.car VALUES (2, '09876VINCARTHING', 'SU', 'Ford', 'Escape', 2021, 0, 6, 75.00, true, false);
+INSERT INTO public.car VALUES (3, '12121VINCARTHING', 'SE', 'Subaru', 'Legacy', 2021, 0, 5, 23.55, true, false);
+INSERT INTO public.car VALUES (4, '33333VINCARTHING', 'SE', 'Subaru', 'WRX', 2020, 0, 5, 28.55, true, false);
+INSERT INTO public.car VALUES (5, '11111VINCARTHING', 'SU', 'Honda', 'Passport', 2020, 0, 8, 41.22, true, false);
+INSERT INTO public.car VALUES (6, '1234567890123456', 'CO', 'BMW', 'M4', 2021, 0, 5, 71.22, true, false);
+
+--
+-- Data for Name: cartype; Type: TABLE DATA; Schema: public
+--
+
+INSERT INTO public.cartype VALUES ('SU', 'SUV');
+INSERT INTO public.cartype VALUES ('SE', 'Sedan');
+INSERT INTO public.cartype VALUES ('CO', 'Coupe');
+INSERT INTO public.cartype VALUES ('MV', 'Minivan');
+
+
+--
+-- Data for Name: customer; Type: TABLE DATA; Schema: public
+--
+
+INSERT INTO public.customer VALUES (1, 'Bob', 'TheBuilder', '1-ABCDEFG*13', '1234-01-23', 'Somewhere St', 'Elsewhere', 'WA');
+INSERT INTO public.customer VALUES (2, 'Dora', 'TheExplorer', 'AB123456C', '2345-02-22', 'Elsewhere St', 'Somewhere', 'ID');
+INSERT INTO public.customer VALUES (3, 'Tom', 'AndJerry', '12345678', '2222-12-22', 'House St', 'Everywhere', 'AL');
+INSERT INTO public.customer VALUES (4, 'Database', 'God', 'A1234567890', '2000-01-01', 'SQL St', 'Nowhere', 'MI');
+
+
+--
+-- Data for Name: ratingrecord; Type: TABLE DATA; Schema: public
+--
+
+INSERT INTO public.ratingrecord VALUES (1, 'UU467HJ8G2DAAAAA', 5);
+INSERT INTO public.ratingrecord VALUES (4, 'ABCDEFGHI123AAAA', 4);
+INSERT INTO public.ratingrecord VALUES (5, '1234QUERTY123AAA', 5);
+INSERT INTO public.ratingrecord VALUES (4, '123RENT456789AAA', 3);
+
+
+--
+-- Data for Name: rentalrecord; Type: TABLE DATA; Schema: public
+--
+
+INSERT INTO public.rentalrecord VALUES (1, 1, '2021-05-25 12:31:54.267327', '2021-06-10 12:00:00', '2021-06-12 12:00:00', 'UU467HJ8G2DAAAAA', 2239.00);
+INSERT INTO public.rentalrecord VALUES (4, 2, '2021-05-20 18:00:00', '2021-05-30 15:25:20', '2021-05-29 12:00:00', 'ABCDEFGHI123AAAA', 8052.17);
+INSERT INTO public.rentalrecord VALUES (5, 4, '2021-05-18 18:00:00', '2021-05-30 15:25:20', '2021-05-31 12:00:00', '1234QUERTY123AAA', 12613.32);
+INSERT INTO public.rentalrecord VALUES (4, 3, '2021-05-28 12:00:00', '2021-05-30 15:25:20', '2021-05-31 12:00:00', '123RENT456789AAA', 2055.60);
+
+
+--
+-- Data for Name: states; Type: TABLE DATA; Schema: public
+--
+
+INSERT INTO public.states VALUES ('AL', 'Alabama');
+INSERT INTO public.states VALUES ('AK', 'Alaska');
+INSERT INTO public.states VALUES ('AZ', 'Arizona');
+INSERT INTO public.states VALUES ('AR', 'Arkansas');
+INSERT INTO public.states VALUES ('CA', 'California');
+INSERT INTO public.states VALUES ('CO', 'Colorado');
+INSERT INTO public.states VALUES ('CT', 'Connecticut');
+INSERT INTO public.states VALUES ('DE', 'Delaware');
+INSERT INTO public.states VALUES ('FL', 'Florida');
+INSERT INTO public.states VALUES ('GA', 'Georgia');
+INSERT INTO public.states VALUES ('HI', 'Hawaii');
+INSERT INTO public.states VALUES ('ID', 'Idaho');
+INSERT INTO public.states VALUES ('IL', 'Illinois');
+INSERT INTO public.states VALUES ('IN', 'Indiana');
+INSERT INTO public.states VALUES ('IA', 'Iowa');
+INSERT INTO public.states VALUES ('KS', 'Kansas');
+INSERT INTO public.states VALUES ('KY', 'Kentucky');
+INSERT INTO public.states VALUES ('LA', 'Louisiana');
+INSERT INTO public.states VALUES ('ME', 'Maine');
+INSERT INTO public.states VALUES ('MD', 'Maryland');
+INSERT INTO public.states VALUES ('MA', 'Massachusetts');
+INSERT INTO public.states VALUES ('MI', 'Michigan');
+INSERT INTO public.states VALUES ('MN', 'Minnesota');
+INSERT INTO public.states VALUES ('MS', 'Mississippi');
+INSERT INTO public.states VALUES ('MO', 'Missouri');
+INSERT INTO public.states VALUES ('MT', 'Montana');
+INSERT INTO public.states VALUES ('NE', 'Nebraska');
+INSERT INTO public.states VALUES ('NV', 'Nevada');
+INSERT INTO public.states VALUES ('NH', 'New Hampshire');
+INSERT INTO public.states VALUES ('NJ', 'New Jersey');
+INSERT INTO public.states VALUES ('NM', 'New Mexico');
+INSERT INTO public.states VALUES ('NY', 'New York');
+INSERT INTO public.states VALUES ('NC', 'North Carolina');
+INSERT INTO public.states VALUES ('ND', 'North Dakota');
+INSERT INTO public.states VALUES ('OH', 'Ohio');
+INSERT INTO public.states VALUES ('OK', 'Oklahoma');
+INSERT INTO public.states VALUES ('OR', 'Oregon');
+INSERT INTO public.states VALUES ('PA', 'Pennsylvania');
+INSERT INTO public.states VALUES ('RI', 'Rhode Island');
+INSERT INTO public.states VALUES ('SC', 'South Carolina');
+INSERT INTO public.states VALUES ('SD', 'South Dakota');
+INSERT INTO public.states VALUES ('TN', 'Tennessee');
+INSERT INTO public.states VALUES ('TX', 'Texas');
+INSERT INTO public.states VALUES ('UT', 'Utah');
+INSERT INTO public.states VALUES ('VT', 'Vermont');
+INSERT INTO public.states VALUES ('VA', 'Virginia');
+INSERT INTO public.states VALUES ('WA', 'Washington');
+INSERT INTO public.states VALUES ('WV', 'West Virginia');
+INSERT INTO public.states VALUES ('WI', 'Wisconsin');
+INSERT INTO public.states VALUES ('WY', 'Wyoming');
+
+
+--
+-- Name: car_id_seq; Type: SEQUENCE SET; Schema: public
+--
+
+SELECT pg_catalog.setval('public.car_id_seq', 6, true);
+
+
+--
+-- Name: customer_id_seq; Type: SEQUENCE SET; Schema: public
+--
+
+SELECT pg_catalog.setval('public.customer_id_seq', 4, true);
+
+
+--
+-- Name: car car_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.car
+    ADD CONSTRAINT car_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: car car_vin_key; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.car
+    ADD CONSTRAINT car_vin_key UNIQUE (vin);
+
+
+--
+-- Name: cartype cartype_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.cartype
+    ADD CONSTRAINT cartype_pkey PRIMARY KEY (type);
+
+
+--
+-- Name: customer customer_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.customer
+    ADD CONSTRAINT customer_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: ratingrecord ratingrecord_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.ratingrecord
+    ADD CONSTRAINT ratingrecord_pkey PRIMARY KEY (carid, rentalnumber);
+
+
+--
+-- Name: rentalrecord rentalrecord_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.rentalrecord
+    ADD CONSTRAINT rentalrecord_pkey PRIMARY KEY (rentalnumber);
+
+
+--
+-- Name: states states_pkey; Type: CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.states
+    ADD CONSTRAINT states_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: car car_cartype_fkey; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.car
+    ADD CONSTRAINT car_cartype_fkey FOREIGN KEY (cartype) REFERENCES public.cartype(type);
+
+
+--
+-- Name: customer customer_state_fkey; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.customer
+    ADD CONSTRAINT customer_state_fkey FOREIGN KEY (state) REFERENCES public.states(id);
+
+
+--
+-- Name: ratingrecord ratingrecord_carid_fkey; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.ratingrecord
+    ADD CONSTRAINT ratingrecord_carid_fkey FOREIGN KEY (carid) REFERENCES public.car(id);
+
+
+--
+-- Name: ratingrecord ratingrecord_rentalnumber_fkey; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.ratingrecord
+    ADD CONSTRAINT ratingrecord_rentalnumber_fkey FOREIGN KEY (rentalnumber) REFERENCES public.rentalrecord(rentalnumber);
+
+
+--
+-- Name: rentalrecord rentalrecord_carid_fkey; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.rentalrecord
+    ADD CONSTRAINT rentalrecord_carid_fkey FOREIGN KEY (carid) REFERENCES public.car(id);
+
+
+--
+-- Name: rentalrecord rentalrecord_customerid_fkey; Type: FK CONSTRAINT; Schema: public
+--
+
+ALTER TABLE ONLY public.rentalrecord
+    ADD CONSTRAINT rentalrecord_customerid_fkey FOREIGN KEY (customerid) REFERENCES public.customer(id);
+
+
+--
+-- PostgreSQL database dump complete
+--
+
