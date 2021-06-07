@@ -323,10 +323,10 @@ def query_rental():
             FROM RentalRecord
 	        JOIN Customer ON (Customer.id = RentalRecord.Customerid)
 	        JOIN Car ON (Car.id = RentalRecord.Carid)
-            WHERE RentalRecord.RentalNumber ILIKE %s;
             """      
     if rental_record['rental_number'] != "ALL":
         rentalInfoQuery += "WHERE RentalRecord.rentalNumber ILIKE %s"
+    rentalInfoQuery += ";";
     try:
         conn = psycopg2.connect(DATABASE_DEFAULT)
         cur = conn.cursor()
